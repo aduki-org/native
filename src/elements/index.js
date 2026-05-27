@@ -24,7 +24,7 @@ const Badge = typeof customElements !== 'undefined' ? customElements.get('ui-bad
 const Avatar = typeof customElements !== 'undefined' ? customElements.get('ui-avatar') : null;
 const Divider = typeof customElements !== 'undefined' ? customElements.get('ui-divider') : null;
 const Text = typeof customElements !== 'undefined' ? customElements.get('ui-text') : null;
-const Link = typeof customElements !== 'undefined' ? customElements.get('ui-link') : null;
+const Link = typeof customElements !== 'undefined' ? customElements.get('nav-link') : null;
 const Spinner = typeof customElements !== 'undefined' ? customElements.get('ui-spinner') : null;
 
 // 2. Form Controls

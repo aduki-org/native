@@ -36,17 +36,17 @@ tpl.innerHTML = `
     }
 
     /* Distribute styles downwards to child link elements */
-    ::slotted(ui-link) {
+    ::slotted(nav-link) {
       padding: var(--space-2) var(--space-3);
       border-radius: var(--radius-md);
       transition: background-color var(--duration-fast) var(--ease-out);
     }
 
-    ::slotted(ui-link:hover) {
+    ::slotted(nav-link:hover) {
       background: var(--color-interactive-disabled);
     }
 
-    ::slotted(ui-link[aria-current="page"]) {
+    ::slotted(nav-link[aria-current="page"]) {
       background: var(--color-interactive-disabled);
       color: var(--color-interactive);
       font-weight: var(--font-weight-semibold);

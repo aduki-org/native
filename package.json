@@ -5,6 +5,7 @@
   "author": "fescii",
   "license": "MIT",
   "type": "module",
+  "types": "./types/index.d.ts",
   "homepage": "https://github.com/aduki-org/native#readme",
   "repository": {
     "type": "git",
@@ -22,25 +23,65 @@
   ],
   "files": [
     "src/",
+    "types/",
     "importmap.json",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
   "exports": {
-    ".":             "./src/index.js",
-    "./api":         "./src/core/api/index.js",
-    "./state":       "./src/core/state/index.js",
-    "./events":      "./src/core/events/index.js",
-    "./router":      "./src/core/router/index.js",
-    "./storage":     "./src/core/storage/index.js",
-    "./offline":     "./src/core/offline/index.js",
-    "./animations":  "./src/core/animations/index.js",
-    "./workers":     "./src/core/workers/index.js",
-    "./security":    "./src/core/security/index.js",
-    "./platform":    "./src/core/platform/supports.js",
-    "./ui":          "./src/core/ui/index.js",
-    "./elements":    "./src/elements/index.js"
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./api": {
+      "types": "./types/core/api/index.d.ts",
+      "default": "./src/core/api/index.js"
+    },
+    "./state": {
+      "types": "./types/core/state/index.d.ts",
+      "default": "./src/core/state/index.js"
+    },
+    "./events": {
+      "types": "./types/core/events/index.d.ts",
+      "default": "./src/core/events/index.js"
+    },
+    "./router": {
+      "types": "./types/core/router/index.d.ts",
+      "default": "./src/core/router/index.js"
+    },
+    "./storage": {
+      "types": "./types/core/storage/index.d.ts",
+      "default": "./src/core/storage/index.js"
+    },
+    "./offline": {
+      "types": "./types/core/offline/index.d.ts",
+      "default": "./src/core/offline/index.js"
+    },
+    "./animations": {
+      "types": "./types/core/animations/index.d.ts",
+      "default": "./src/core/animations/index.js"
+    },
+    "./workers": {
+      "types": "./types/core/workers/index.d.ts",
+      "default": "./src/core/workers/index.js"
+    },
+    "./security": {
+      "types": "./types/core/security/index.d.ts",
+      "default": "./src/core/security/index.js"
+    },
+    "./platform": {
+      "types": "./types/core/platform/supports.d.ts",
+      "default": "./src/core/platform/index.js"
+    },
+    "./ui": {
+      "types": "./types/core/ui/index.d.ts",
+      "default": "./src/core/ui/index.js"
+    },
+    "./elements": {
+      "types": "./types/elements/index.d.ts",
+      "default": "./src/elements/index.js"
+    }
   },
   "scripts": {
     "start":     "node server.js",

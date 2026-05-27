@@ -385,7 +385,7 @@ elements/
 │   ├── icon.js              — <ui-icon>       SVG sprite reference; aria-hidden default; size tokens
 │   ├── text.js              — <ui-text>       semantic type scale; as="" attr for element choice
 │   ├── divider.js           — <ui-divider>    <hr> equivalent; orientation; spacing tokens
-│   └── link.js              — <ui-link>       router-aware; aria-current; external indicator
+│   └── link.js              — <nav-link>      router-aware; aria-current; external indicator; dispatches cancelable external events
 │
 ├── forms/
 │   ├── field.js             — <ui-field>      label + control wrapper; error/hint slots; required

@@ -10,7 +10,7 @@
     "@adukiorg/native/animations":  "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/animations/index.js",
     "@adukiorg/native/workers":     "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/workers/index.js",
     "@adukiorg/native/security":    "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/security/index.js",
-    "@adukiorg/native/platform":    "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/platform/supports.js",
+    "@adukiorg/native/platform":    "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/platform/index.js",
     "@adukiorg/native/ui":          "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/core/ui/index.js",
     "@adukiorg/native/elements":    "https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/src/elements/index.js"
   }

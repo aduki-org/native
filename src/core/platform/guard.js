@@ -45,8 +45,24 @@ export async function anchor(floating, anchorEl, options = {}) {
 }
 
 export async function sanitizer() {
-  if (supports.sanitizerAPI) {
-    return new globalThis.Sanitizer();
+  if (supports.sanitizerAPI && typeof globalThis.Sanitizer === 'function') {
+    try {
+      const s = new globalThis.Sanitizer();
+      if (typeof s.sanitize === 'function') {
+        return {
+          sanitizeToString(input) {
+            const temp = document.createElement('div');
+            temp.innerHTML = input;
+            const fragment = s.sanitize(temp);
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(fragment);
+            return wrapper.innerHTML;
+          }
+        };
+      }
+    } catch {
+      // Fallback if construction fails
+    }
   }
   // Lightweight DOMPurify / Sanitizer standard fallback
   return {

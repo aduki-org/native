@@ -33,6 +33,11 @@ pub fn run(src_dir: &Path, dist_types_dir: &Path) {
             if let Some(spec) = parse_element_file(path) {
                 specs.push((path.to_path_buf(), spec));
             }
+        } else if path.extension().map_or(false, |ext| ext == "html") {
+            logs::compiler!("Found HTML: {:?}", path);
+            if let Err(err) = super::html::parse_and_emit(path) {
+                logs::error!("Failed to generate tags descriptor for {:?}: {}", path, err);
+            }
         }
     }
 

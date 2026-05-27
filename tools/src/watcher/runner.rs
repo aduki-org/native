@@ -29,6 +29,21 @@ pub fn start(src_path: PathBuf, types_path: PathBuf, tx: broadcast::Sender<HmrMe
                 // If a JS element changed, trigger a re-extraction pass
                 if msg.kind == ChangeKind::Js {
                     crate::extract::run(&src_path, &types_path);
+                } else if msg.kind == ChangeKind::Html {
+                    let html_path = src_path.join(&msg.path);
+                    if html_path.exists() {
+                        if let Err(err) = crate::extract::html::parse_and_emit(&html_path) {
+                            logs::error!("Failed to regenerate tags descriptor for {:?}: {}", html_path, err);
+                        }
+                    } else {
+                        let mut descriptor_path = html_path.clone();
+                        descriptor_path.set_extension("tags.json");
+                        if let Err(err) = std::fs::remove_file(&descriptor_path) {
+                            if err.kind() != std::io::ErrorKind::NotFound {
+                                logs::error!("Failed to remove stale tags descriptor {:?}: {}", descriptor_path, err);
+                            }
+                        }
+                    }
                 }
 
                 // Broadcast Event to Axum Connections
@@ -68,13 +83,12 @@ impl SystemWatcher {
     /// Read incoming events, debouncing multiple quick changes
     pub fn poll_events(&self) -> Vec<HmrMessage> {
         let mut events = Vec::new();
-        let mut last_activity = Instant::now();
         let debounce_duration = Duration::from_millis(150);
 
         // Block and read the first event (if any), then non-block read remaining debounced events
         if let Ok(Ok(event)) = self.rx.recv_timeout(Duration::from_millis(50)) {
             events.push(event);
-            last_activity = Instant::now();
+            let mut last_activity = Instant::now();
 
             while last_activity.elapsed() < debounce_duration {
                 if let Ok(Ok(evt)) = self.rx.recv_timeout(Duration::from_millis(20)) {

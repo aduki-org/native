@@ -1,7 +1,7 @@
 // tools/src/main.rs
 
 use std::path::PathBuf;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use tokio::sync::broadcast;
 
 mod extract;
@@ -14,6 +14,9 @@ use types::HmrMessage;
 #[derive(Parser, Debug)]
 #[command(name = "native-tools", version = "0.1.0", about = "Native-First ESM Dev Pipeline")]
 struct Args {
+    #[command(subcommand)]
+    command: Option<Command>,
+
     #[arg(short, long, default_value = "src")]
     src: String,
 
@@ -27,20 +30,80 @@ struct Args {
     build: bool,
 }
 
+#[derive(Subcommand, Debug)]
+enum Command {
+    Scan {
+        #[arg(short, long, default_value = "src")]
+        src: String,
+
+        #[arg(long)]
+        watch: bool,
+
+        #[arg(long, default_value = "dist/types")]
+        types: String,
+    },
+    Build {
+        #[arg(short, long, default_value = "src")]
+        src: String,
+
+        #[arg(long, default_value = "dist")]
+        dist: String,
+    },
+    Dev {
+        #[arg(short, long, default_value = "src")]
+        src: String,
+
+        #[arg(short, long, default_value = "3000")]
+        port: u16,
+
+        #[arg(long, default_value = "dist")]
+        dist: String,
+    },
+}
+
 #[tokio::main]
 async fn main() {
     // Bootstrap colored logger
     logs::init();
 
     let args = Args::parse();
+
+    if let Some(command) = args.command {
+        match command {
+            Command::Scan { src, watch, types } => {
+                let src = PathBuf::from(src);
+                let types = PathBuf::from(types);
+                extract::run(&src, &types);
+
+                if watch {
+                    let (tx, _rx) = broadcast::channel::<HmrMessage>(100);
+                    watcher::start(src, types, tx);
+                    tokio::signal::ctrl_c().await.unwrap();
+                }
+            }
+            Command::Build { src, dist } => {
+                extract::build(&PathBuf::from(src), &PathBuf::from(dist));
+            }
+            Command::Dev { src, port, dist } => {
+                run_dev(PathBuf::from(src), PathBuf::from(dist), port).await;
+            }
+        }
+        return;
+    }
+
     let src = PathBuf::from(&args.src);
     let dist = PathBuf::from(&args.dist);
-    let types = dist.join("types");
 
     if args.build {
         extract::build(&src, &dist);
         return;
     }
+
+    run_dev(src, dist, args.port).await;
+}
+
+async fn run_dev(src: PathBuf, dist: PathBuf, port: u16) {
+    let types = dist.join("types");
 
     logs::info!("Bootstrapping native dev pipeline...");
 
@@ -54,7 +117,7 @@ async fn main() {
     let server_src = src.clone();
     let server_tx = tx.clone();
     tokio::spawn(async move {
-        server::run(args.port, &server_src, server_tx).await;
+        server::run(port, &server_src, server_tx).await;
     });
 
     // 4. Start concurrent watcher thread

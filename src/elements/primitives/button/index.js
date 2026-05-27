@@ -20,14 +20,14 @@ ui.element('ui-button', {
     type: { type: String, reflect: true, default: 'button' },
     value: { type: String, reflect: true }
   },
-  mount({ el, ctrl, internals }) {
-    const btn = el.shadowRoot.querySelector('button');
+  mount({ el, internals, tags, on }) {
+    const btn = tags.one('button');
 
     // Sync button attributes
     btn.disabled = el.disabled;
     btn.type = el.type;
 
-    btn.addEventListener('click', (e) => {
+    on.click('button', (e) => {
       if (el.disabled || el.loading) {
         e.preventDefault();
         e.stopPropagation();
@@ -48,10 +48,10 @@ ui.element('ui-button', {
       }
 
       el.dispatchEvent(new CustomEvent('activate', { bubbles: true, composed: true }));
-    }, { signal: ctrl.signal });
+    });
   },
-  update({ el, name, val }) {
-    const btn = el.shadowRoot.querySelector('button');
+  update({ el, name, val, tags }) {
+    const btn = tags.one('button');
     if (name === 'disabled') {
       btn.disabled = !!val;
     } else if (name === 'type') {

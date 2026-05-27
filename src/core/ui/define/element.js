@@ -1,37 +1,9 @@
-/**
- * src/core/ui/define.js
- *
- * Custom Element Definer & Declarative UI Element Factory.
- * Implements the declarative customElements generator supporting property reflection,
- * type-safe casting, form internals, reactive update scheduling, and stylesheet HMR.
- *
- * Source: doc 04 — Web Components §1, §3, §6, doc 12 — Performance §2
- */
-
-import { BaseElement } from './base.js';
-import { scheduleFrame } from './schedule.js';
-
-// Absolute URL assets cache mapping
-const assetCache = new Map();
-
-/**
- * Registers a custom element with a duplicate-registration safety guard.
- */
-export function define(tag, Class) {
-  if (typeof customElements !== 'undefined') {
-    if (customElements.get(tag)) {
-      console.warn(`Custom Element "${tag}" is already registered. Skipping duplicate load.`);
-      return;
-    }
-    customElements.define(tag, Class);
-  }
-}
-
-// Safe private storage keys mapped per instance (access-safety outside lexical class boundary)
-const internalsMap = new WeakMap();
-const initializedMap = new WeakMap();
-const pendingUpdatesMap = new WeakMap();
-const updateScheduledMap = new WeakMap();
+import { BaseElement } from '../base.js';
+import { scheduleFrame } from '../schedule.js';
+import { router } from '../../router/index.js';
+import { specRegistry, internalsMap, initializedMap, pendingUpdatesMap, updateScheduledMap } from './state.js';
+import { preloadResources } from './utils.js';
+import { createComponentContext } from './proxy.js';
 
 /**
  * High-performance declarative element factory.
@@ -41,6 +13,15 @@ export function element(tag, spec, base) {
   if (customElements.get(tag)) {
     console.warn(`Declarative Element "${tag}" is already defined. Skipping.`);
     return;
+  }
+
+  // Cache element spec for automated layout orchestration and diffing
+  specRegistry.set(tag.toLowerCase(), spec);
+
+  // Automatically register elements with the route matcher if a url pattern is specified
+  if (spec.url) {
+    const meta = { ...spec.meta, container: spec.container };
+    router.register(spec.url, tag, meta);
   }
 
   // Define properties to watch
@@ -89,7 +70,11 @@ export function element(tag, spec, base) {
       super.connectedCallback();
       
       // Wait for resolved resources to compile
-      const { templateNode, stylesheet } = await resourcesPromise;
+      const { templateNode, stylesheet, tagsDescriptor } = await resourcesPromise;
+
+      if (!this.ctrl || this.ctrl.signal.aborted || !this.isConnected) {
+        return;
+      }
 
       if (templateNode && this.shadowRoot.childNodes.length === 0) {
         this.shadowRoot.appendChild(templateNode.cloneNode(true));
@@ -98,6 +83,20 @@ export function element(tag, spec, base) {
       if (stylesheet) {
         this.shadowRoot.adoptedStyleSheets = [stylesheet];
       }
+      
+      const context = createComponentContext({
+        el: this,
+        shadowRoot: this.shadowRoot,
+        ctrl: this.ctrl,
+        descriptor: tagsDescriptor,
+        internals: internalsMap.get(this)
+      });
+
+      this._ctx = context;
+      this._tags = context.tags;
+      this._on = context.on;
+      this._refs = context.refs;
+      this._watch = context.watch;
 
       initializedMap.set(this, true);
 
@@ -125,17 +124,19 @@ export function element(tag, spec, base) {
 
       // Mount hook trigger passed with unified AbortController signal
       if (spec.mount) {
-        spec.mount({
-          el: this,
-          ctrl: this.ctrl,
-          internals: internalsMap.get(this)
-        });
+        spec.mount(context);
       }
     }
 
     disconnectedCallback() {
       if (spec.unmount) {
-        spec.unmount({ el: this, internals: internalsMap.get(this) });
+        spec.unmount({ 
+          el: this, 
+          tags: this._tags,
+          refs: this._refs,
+          watch: this._watch,
+          internals: internalsMap.get(this) 
+        });
       }
       super.disconnectedCallback();
     }
@@ -208,12 +209,29 @@ export function element(tag, spec, base) {
           if (!updateScheduledMap.get(this)) {
             updateScheduledMap.set(this, true);
             scheduleFrame(() => {
+              if (!this.ctrl || this.ctrl.signal.aborted || !this.isConnected) {
+                pendingUpdates.clear();
+                updateScheduledMap.set(this, false);
+                return;
+              }
+
               const changes = Array.from(pendingUpdates.entries());
               pendingUpdates.clear();
               updateScheduledMap.set(this, false);
 
               for (const [name, { val: v, old: o }] of changes) {
-                spec.update({ el: this, name, val: v, old: o });
+                spec.update({ 
+                  el: this, 
+                  ctrl: this.ctrl,
+                  tags: this._tags,
+                  on: this._on,
+                  refs: this._refs,
+                  watch: this._watch,
+                  name, 
+                  val: v, 
+                  old: o,
+                  prev: o 
+                });
               }
             });
           }
@@ -232,69 +250,4 @@ export function element(tag, spec, base) {
 
   // Define element globally
   customElements.define(tag, DeclarativeElement);
-}
-
-/**
- * Preloads style and HTML template resources asynchronously exactly once.
- */
-async function preloadResources(tag, styleUrl, templateUrl, inlineTemplate, inlineStyle) {
-  let templateNode = null;
-  let stylesheet = null;
-
-  // Compile / Fetch styles
-  if (styleUrl) {
-    if (assetCache.has(styleUrl)) {
-      stylesheet = assetCache.get(styleUrl);
-    } else {
-      stylesheet = new CSSStyleSheet();
-      try {
-        const res = await fetch(styleUrl);
-        if (res.ok) {
-          const css = await res.text();
-          stylesheet.replaceSync(css);
-          assetCache.set(styleUrl, stylesheet);
-        }
-      } catch (err) {
-        console.error(`Failed to load style resource for element ${tag}:`, err);
-      }
-    }
-  } else if (inlineStyle) {
-    stylesheet = new CSSStyleSheet();
-    stylesheet.replaceSync(inlineStyle);
-  }
-
-  // Compile / Fetch Template markup
-  if (templateUrl) {
-    if (assetCache.has(templateUrl)) {
-      templateNode = assetCache.get(templateUrl);
-    } else {
-      try {
-        const res = await fetch(templateUrl);
-        if (res.ok) {
-          const html = await res.text();
-          templateNode = createTemplateFragment(html);
-          assetCache.set(templateUrl, templateNode);
-        }
-      } catch (err) {
-        console.error(`Failed to fetch template resource for element ${tag}:`, err);
-      }
-    }
-  } else if (inlineTemplate) {
-    templateNode = createTemplateFragment(inlineTemplate);
-  }
-
-  return { templateNode, stylesheet };
-}
-
-/**
- * Compiles an HTML string into a DocumentFragment utilizing the fastest native methods.
- */
-function createTemplateFragment(htmlString) {
-  const tpl = document.createElement('template');
-  if (typeof tpl.setHTMLUnsafe === 'function') {
-    tpl.setHTMLUnsafe(htmlString);
-  } else {
-    tpl.innerHTML = htmlString;
-  }
-  return tpl.content;
 }

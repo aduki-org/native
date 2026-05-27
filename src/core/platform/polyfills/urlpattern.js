@@ -15,10 +15,10 @@ class URLPatternPolyfill {
   constructor(init) {
     let pathnamePattern = '*';
     if (typeof init === 'string') {
-      if (init.startsWith('/') || init.includes('://')) {
+      if (init.includes('://')) {
         try {
-          const url = new URL(init, 'https://a.com');
-          pathnamePattern = url.pathname;
+          const match = init.match(/^[a-zA-Z]+:\/\/[^\/]+(\/[^?#]*)/);
+          pathnamePattern = match ? match[1] : '/';
         } catch {
           pathnamePattern = init;
         }
@@ -35,6 +35,7 @@ class URLPatternPolyfill {
     }
 
     this.#paramNames = [];
+    let wildcardCount = 0;
 
     const segments = pathnamePattern.split('/');
     const regexSegments = segments.map((segment, idx) => {
@@ -59,10 +60,10 @@ class URLPatternPolyfill {
           return '([^/]+)';
         }
       } else if (segment === '*') {
-        this.#paramNames.push(String(this.#paramNames.length));
+        this.#paramNames.push(String(wildcardCount++));
         return '(.*)';
       } else if (segment.includes('*')) {
-        this.#paramNames.push(String(this.#paramNames.length));
+        this.#paramNames.push(String(wildcardCount++));
         return segment.replace(/\*/g, '(.*)');
       } else {
         return segment.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');

@@ -9,7 +9,7 @@
  */
 
 import { BaseElement } from './base.js';
-import { define, element } from './define.js';
+import { define, element, container } from './define/index.js';
 import { schedule, scheduleFrame, yieldTask } from './schedule.js';
 import { transition } from './transitions.js';
 import { template } from './template.js';
@@ -18,6 +18,7 @@ import * as observe from './observe.js';
 export const ui = {
   define,
   element,
+  container,
   schedule,
   scheduleFrame,
   yield: yieldTask,
@@ -30,6 +31,7 @@ export {
   BaseElement,
   define,
   element,
+  container,
   schedule,
   scheduleFrame,
   yieldTask,

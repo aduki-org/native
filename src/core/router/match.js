@@ -49,8 +49,10 @@ export async function match(url) {
 
     const result = route.pattern.exec(targetUrl.href);
     if (result) {
+      const tag = typeof route.handler === 'function' ? route.handler() : route.handler;
       return {
         route,
+        tag,
         params: result.pathname.groups || {},
         result
       };

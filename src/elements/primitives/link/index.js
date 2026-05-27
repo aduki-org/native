@@ -9,9 +9,9 @@
  */
 
 import { ui } from '../../../core/ui/index.js';
-import { navigate } from '../../../core/router/index.js';
+import { router } from '../../../core/router/index.js';
 
-ui.element('ui-link', {
+ui.element('nav-link', {
   style: './style.css',
   template: './index.html',
   props: {
@@ -24,10 +24,8 @@ ui.element('ui-link', {
     const a = el.shadowRoot.querySelector('a');
     a.addEventListener('click', (e) => el._click(e), { signal: ctrl.signal });
 
-    // Track standard global navigation events to update active state automatically
-    if (typeof window !== 'undefined' && window.navigation) {
-      window.navigation.addEventListener('navigate', () => el._syncState(), { signal: ctrl.signal });
-    }
+    // Track active matching events to dynamically refresh state
+    router.on('found', () => el._syncState(), ctrl.signal);
 
     el._update();
   },
@@ -89,11 +87,25 @@ ui.element('ui-link', {
       const target = this.target;
       const external = this.external || href?.startsWith('http://') || href?.startsWith('https://');
 
-      // Skip interception if clicking target blank, external site, hash reference, or modified click
+      // Dispatch cancelable 'external' event for external clicks
+      if (external) {
+        const event = new CustomEvent('external', {
+          detail: { href, target },
+          bubbles: true,
+          cancelable: true,
+          composed: true
+        });
+        this.dispatchEvent(event);
+        if (event.defaultPrevented) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      // Skip interception if clicking target blank, hash reference, or modified click
       if (
         !href ||
         target === '_blank' ||
-        external ||
         href.startsWith('#') ||
         e.defaultPrevented ||
         e.button !== 0 ||

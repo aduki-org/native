@@ -28,7 +28,7 @@ tpl.innerHTML = `
       gap: var(--space-2);
     }
 
-    ::slotted(ui-link), ::slotted(span), ::slotted(a) {
+    ::slotted(nav-link), ::slotted(span), ::slotted(a) {
       font-size: var(--font-size-sm);
       color: var(--color-content-secondary);
       display: inline-flex;
@@ -36,7 +36,7 @@ tpl.innerHTML = `
       gap: var(--space-2);
     }
 
-    ::slotted(ui-link:last-child), ::slotted(span:last-child), ::slotted(a:last-child) {
+    ::slotted(nav-link:last-child), ::slotted(span:last-child), ::slotted(a:last-child) {
       color: var(--color-content-primary);
       font-weight: var(--font-weight-medium);
       pointer-events: none;

@@ -7,7 +7,7 @@
  * Source: doc 18 §12, library2.md §Phase 1-A
  */
 
-import { supports } from './supports.js';
+import { supports, reset } from './supports.js';
 import guard from './guard.js';
 
 // Bootstrapping of critical global environment gaps
@@ -39,4 +39,4 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export { supports, guard };
+export { supports, reset, guard };

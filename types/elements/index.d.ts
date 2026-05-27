@@ -100,7 +100,7 @@ declare global {
     'ui-avatar': Avatar;
     'ui-divider': Divider;
     'ui-text': Text;
-    'ui-link': Link;
+    'nav-link': Link;
     'ui-spinner': Spinner;
 
     'ui-input': Input;

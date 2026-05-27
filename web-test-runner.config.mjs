@@ -32,7 +32,7 @@ export default {
               "@adukiorg/native/animations":  "/src/core/animations/index.js",
               "@adukiorg/native/workers":     "/src/core/workers/index.js",
               "@adukiorg/native/security":    "/src/core/security/index.js",
-              "@adukiorg/native/platform":    "/src/core/platform/supports.js",
+              "@adukiorg/native/platform":    "/src/core/platform/index.js",
               "@adukiorg/native/ui":          "/src/core/ui/index.js",
               "@adukiorg/native/elements":    "/src/elements/index.js"
             }

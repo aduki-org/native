@@ -9,7 +9,7 @@
  */
 
 import { register, match, clear, getRoutes } from './match.js';
-import { setup, addGuard, setNotFound } from './intercept.js';
+import { setup, addGuard, setNotFound, on, nav } from './intercept.js';
 import {
   navigate,
   replace,
@@ -21,16 +21,25 @@ import {
   canBack,
   canForward
 } from './history.js';
-import { renderOutlet } from './outlet.js';
 
-// Auto-bootstrap client-side navigation listeners on client load
-if (typeof window !== 'undefined') {
-  setup();
-}
+import {
+  setupTabSync,
+  registerConnection,
+  getActiveConnections,
+  clearConnections
+} from './sync/index.js';
+
+import {
+  registerContainer,
+  unregisterContainer,
+  getContainer,
+  clearContainers
+} from './container.js';
 
 export const router = {
   // Registration and boundary hooks
-  on: register,
+  register,
+  clear,
   guard: addGuard,
   notFound: setNotFound,
 
@@ -45,10 +54,29 @@ export const router = {
   canBack,
   canForward,
 
-  // Rendering and match utilities
-  render: renderOutlet,
-  match
+  match,
+
+  // Event-driven subscription and navigation controllers
+  on,
+  nav,
+
+  // Synchronization and coordination hooks
+  registerConnection,
+  getActiveConnections,
+  clearConnections,
+
+  // Advanced Container Topology API
+  registerContainer,
+  unregisterContainer,
+  getContainer,
+  clearContainers
 };
+
+// Auto-bootstrap client-side navigation listeners on client load
+if (typeof window !== 'undefined') {
+  setup();
+  setupTabSync(router);
+}
 
 export {
   navigate,
@@ -60,7 +88,7 @@ export {
   entries,
   canBack,
   canForward,
-  renderOutlet,
+
   // match sub-module
   register,
   match,
@@ -69,5 +97,17 @@ export {
   // intercept sub-module
   addGuard,
   setNotFound,
-  setup
+  setup,
+  on,
+  nav,
+  // sync sub-module
+  setupTabSync,
+  registerConnection,
+  getActiveConnections,
+  clearConnections,
+  // container sub-module
+  registerContainer,
+  unregisterContainer,
+  getContainer,
+  clearContainers
 };

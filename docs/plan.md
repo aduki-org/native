@@ -128,7 +128,7 @@ One word first. Folder carries domain. File carries concept. Neither repeats the
 │   │   │   ├── avatar.js          — <ui-avatar>    image with fallback initials
 │   │   │   ├── divider.js         — <ui-divider>   horizontal / vertical
 │   │   │   ├── text.js            — <ui-text>      semantic type scale; as="" attr
-│   │   │   ├── link.js            — <ui-link>      router-aware; aria-current
+│   │   │   ├── link.js            — <nav-link>     router-aware; aria-current
 │   │   │   └── spinner.js         — <ui-spinner>   WAAPI rotation; reduced-motion aware
 │   │   │
 │   │   ├── forms/
@@ -806,7 +806,7 @@ customElements.define('ui-button', Button);
 - [ ] `avatar.js` — `<ui-avatar>` image with fallback initials; `aria-label` required
 - [ ] `divider.js` — `<ui-divider>` `<hr>` equivalent; orientation; spacing tokens
 - [ ] `text.js` — `<ui-text>` semantic type scale; `as=""` attr for element choice
-- [ ] `link.js` — `<ui-link>` router-aware; `aria-current`; external indicator
+- [ ] `link.js` — `<nav-link>` router-aware; `aria-current`; external indicator; dispatches cancelable `external` click event for warnings
 - [ ] `spinner.js` — `<ui-spinner>` WAAPI rotation; `prefers-reduced-motion` aware;
   `aria-label` required; `role="progressbar"` indeterminate
 
