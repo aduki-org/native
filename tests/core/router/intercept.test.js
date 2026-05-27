@@ -6,8 +6,8 @@
  * Source: plan.md Phase 6-A, core/router/intercept.js
  */
 
-import { addGuard, setNotFound, setup } from '@aduki/native/router';
-import { register, match, clear } from '@aduki/native/router';
+import { addGuard, setNotFound, setup } from '@adukiorg/native/router';
+import { register, match, clear } from '@adukiorg/native/router';
 
 describe('Router Interceptor', () => {
   beforeEach(() => {

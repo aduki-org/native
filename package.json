@@ -1,5 +1,5 @@
 {
-  "name": "@aduki/native",
+  "name": "@adukiorg/native",
   "version": "0.1.0",
   "description": "Native-first web platform library — reactive state, networking, offline, animations, custom elements. Zero build step. Pure browser ESM.",
   "author": "fescii",

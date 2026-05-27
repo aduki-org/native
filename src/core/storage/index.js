@@ -170,5 +170,5 @@ export const storage = {
 };
 
 // Named class exports — lets consumers instantiate adapters directly:
-// import { Database, LRUCache } from '@aduki/native/storage';
+// import { Database, LRUCache } from '@adukiorg/native/storage';
 export { Database, LRUCache, WeakLRUCache };

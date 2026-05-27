@@ -1,8 +1,8 @@
-import { ReactiveStore }       from '@aduki/native/state';
-import { Database }            from '@aduki/native/storage';
-import { events }              from '@aduki/native/events';
-import { queue }               from '@aduki/native/offline';
-import { animate, stagger }    from '@aduki/native/animations';
+import { ReactiveStore }       from '@adukiorg/native/state';
+import { Database }            from '@adukiorg/native/storage';
+import { events }              from '@adukiorg/native/events';
+import { queue }               from '@adukiorg/native/offline';
+import { animate, stagger }    from '@adukiorg/native/animations';
 
 // 1. Initialize IndexedDB Storage
 const db = new Database('antigravity_blog', 1, [

@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/api/fetch.js
  */
 
-import { execute, PlatformError } from '@aduki/native/api';
+import { execute, PlatformError } from '@adukiorg/native/api';
 
 describe('Fetch Executor', () => {
   let originalFetch;

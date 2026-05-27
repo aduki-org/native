@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/animations/play.js
  */
 
-import { animate, stagger } from '@aduki/native/animations';
+import { animate, stagger } from '@adukiorg/native/animations';
 
 describe('WAAPI Animation Engine', () => {
   let el;

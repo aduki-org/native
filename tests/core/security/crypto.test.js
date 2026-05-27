@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/security/crypto.js
  */
 
-import { uuid, hash, generateKey, deriveKey, encrypt, decrypt } from '@aduki/native/security';
+import { uuid, hash, generateKey, deriveKey, encrypt, decrypt } from '@adukiorg/native/security';
 
 describe('Web Cryptography Facade', () => {
   it('should generate valid crypto random UUID strings', () => {

@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/state/sync.js
  */
 
-import { sync, ReactiveStore } from '@aduki/native/state';
+import { sync, ReactiveStore } from '@adukiorg/native/state';
 
 describe('Cross-Tab State Sync', () => {
   let originalBroadcastChannel;

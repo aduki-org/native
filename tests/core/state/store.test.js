@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/state/store.js
  */
 
-import { ReactiveStore, setActiveSubscriber, getActiveSubscriber } from '@aduki/native/state';
+import { ReactiveStore, setActiveSubscriber, getActiveSubscriber } from '@adukiorg/native/state';
 
 describe('Reactive State Store', () => {
   it('should initialize and get state properties successfully', () => {

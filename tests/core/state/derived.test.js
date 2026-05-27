@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/state/derived.js
  */
 
-import { derived, ReactiveStore } from '@aduki/native/state';
+import { derived, ReactiveStore } from '@adukiorg/native/state';
 
 describe('Derived Reactive Computations', () => {
   it('should evaluate computations lazily and memoize results', () => {

@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/events/bus.js
  */
 
-import { bus, EventBus } from '@aduki/native/events';
+import { bus, EventBus } from '@adukiorg/native/events';
 
 describe('Global Event Bus', () => {
   it('should register listeners and emit custom events with payload details', () => {

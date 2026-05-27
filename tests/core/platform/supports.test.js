@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/platform/supports.js
  */
 
-import { supports, reset } from '@aduki/native/platform';
+import { supports, reset } from '@adukiorg/native/platform';
 
 describe('Supports Feature Detection', () => {
   it('should expose valid boolean feature flags', () => {

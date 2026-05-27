@@ -1,6 +1,6 @@
-# @aduki/native — Usage Guide
+# @adukiorg/native — Usage Guide
 
-A practical reference for integrating `@aduki/native` into any browser-native app.  
+A practical reference for integrating `@adukiorg/native` into any browser-native app.  
 No build step. No bundler. Just an import map and native ESM.
 
 **Guides:** [Core modules](#modules) · [Server setup](./server.md) · [Elements](./elements.md)
@@ -12,7 +12,7 @@ No build step. No bundler. Just an import map and native ESM.
 ### 1. Install
 
 ```bash
-npm install @aduki/native
+npm install @adukiorg/native
 ```
 
 ### 2. Declare an Import Map
@@ -20,21 +20,21 @@ npm install @aduki/native
 The package ships an `importmap.json`. One line — no copying, no list to maintain:
 
 ```html
-<script type="importmap" src="https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/importmap.json"></script>
+<script type="importmap" src="https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/importmap.json"></script>
 ```
 
 > Swap `@0.1.0` for `@latest` to always track the newest release, or pin the version for reproducible deploys.
 
-> **Need to override a single module?** Copy the full map from [`importmap.json`](https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/importmap.json) into a `<script type="importmap">` inline block and edit just the entries you need.
+> **Need to override a single module?** Copy the full map from [`importmap.json`](https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/importmap.json) into a `<script type="importmap">` inline block and edit just the entries you need.
 
 ### 3. Import in your modules
 
 ```js
 // app.js
-import { ReactiveStore }    from '@aduki/native/state';
-import { api }              from '@aduki/native/api';
-import { Database }         from '@aduki/native/storage';
-import { animate }          from '@aduki/native/animations';
+import { ReactiveStore }    from '@adukiorg/native/state';
+import { api }              from '@adukiorg/native/api';
+import { Database }         from '@adukiorg/native/storage';
+import { animate }          from '@adukiorg/native/animations';
 ```
 
 ---
@@ -43,12 +43,12 @@ import { animate }          from '@aduki/native/animations';
 
 ---
 
-### `@aduki/native/state`
+### `@adukiorg/native/state`
 
 Reactive, proxy-based state with microtask-batched change notifications.
 
 ```js
-import { ReactiveStore, derived, sync } from '@aduki/native/state';
+import { ReactiveStore, derived, sync } from '@adukiorg/native/state';
 
 // Basic store
 const store = new ReactiveStore({ user: null, theme: 'dark' });
@@ -83,12 +83,12 @@ greeting.subscribe(() => console.log(greeting.value));
 
 ---
 
-### `@aduki/native/api`
+### `@adukiorg/native/api`
 
 Fetch wrapper with retries, caching, timeouts, and streaming.
 
 ```js
-import { api, PlatformError, retry, stream } from '@aduki/native/api';
+import { api, PlatformError, retry, stream } from '@adukiorg/native/api';
 
 // Simple GET — auto-parses JSON
 const posts = await api.get('/api/posts');
@@ -122,12 +122,12 @@ for await (const chunk of stream('/api/events')) {
 
 ---
 
-### `@aduki/native/storage`
+### `@adukiorg/native/storage`
 
 Tiered storage: LRU memory → IndexedDB → Cache API → OPFS.
 
 ```js
-import { storage, Database, LRUCache } from '@aduki/native/storage';
+import { storage, Database, LRUCache } from '@adukiorg/native/storage';
 
 // Unified facade (picks the right tier automatically)
 await storage.set('user', { name: 'Ada' });
@@ -166,12 +166,12 @@ lru.clear();
 
 ---
 
-### `@aduki/native/offline`
+### `@adukiorg/native/offline`
 
 Offline queue and connectivity detection.
 
 ```js
-import { queue, check, subscribe } from '@aduki/native/offline';
+import { queue, check, subscribe } from '@adukiorg/native/offline';
 
 // Connectivity
 const online = check();                    // true | false right now
@@ -196,12 +196,12 @@ subscribe(async (online) => {
 
 ---
 
-### `@aduki/native/animations`
+### `@adukiorg/native/animations`
 
 WAAPI wrappers with AbortSignal and stagger support.
 
 ```js
-import { animate, stagger } from '@aduki/native/animations';
+import { animate, stagger } from '@adukiorg/native/animations';
 
 // Single element
 const anim = animate(el, [
@@ -228,12 +228,12 @@ group.finish();         // fast-forward all to end
 
 ---
 
-### `@aduki/native/router`
+### `@adukiorg/native/router`
 
 Client-side routing over the Navigation API and History API.
 
 ```js
-import { register, navigate, addGuard, setNotFound } from '@aduki/native/router';
+import { register, navigate, addGuard, setNotFound } from '@adukiorg/native/router';
 
 // Register routes
 register('/',          () => render(HomePage));
@@ -259,12 +259,12 @@ navigate('/posts/42', { state: { scroll: 0 } });
 
 ---
 
-### `@aduki/native/events`
+### `@adukiorg/native/events`
 
 Typed pub/sub with wildcard patterns and AbortSignal cleanup.
 
 ```js
-import { events, EventBus } from '@aduki/native/events';
+import { events, EventBus } from '@adukiorg/native/events';
 
 // Global singleton bus
 events.on('auth:login',  (user) => console.log('Logged in:', user));
@@ -283,12 +283,12 @@ bus.on('*', (event, data) => console.log(event, data)); // wildcard
 
 ---
 
-### `@aduki/native/workers`
+### `@adukiorg/native/workers`
 
 Web Locks and Worker pool coordination.
 
 ```js
-import { lock, WorkerPool } from '@aduki/native/workers';
+import { lock, WorkerPool } from '@adukiorg/native/workers';
 
 // Exclusive lock — safe concurrent access to shared resources
 const result = await lock('db-write', async () => {
@@ -307,12 +307,12 @@ pool.terminate();
 
 ---
 
-### `@aduki/native/security`
+### `@adukiorg/native/security`
 
 Web Crypto and XSS sanitization.
 
 ```js
-import { uuid, hash, generateKey, encrypt, decrypt, sanitize } from '@aduki/native/security';
+import { uuid, hash, generateKey, encrypt, decrypt, sanitize } from '@adukiorg/native/security';
 
 // Identifiers
 const id = uuid();   // crypto.randomUUID()
@@ -336,12 +336,12 @@ const safe = sanitize('<img src=x onerror=alert(1)>Hello<b>world</b>');
 
 ---
 
-### `@aduki/native/platform`
+### `@adukiorg/native/platform`
 
 Feature detection — check before using any API.
 
 ```js
-import { supports } from '@aduki/native/platform';
+import { supports } from '@adukiorg/native/platform';
 
 if (supports('indexedDB'))    { /* use IDB */ }
 if (supports('locks'))        { /* use Web Locks */ }
@@ -361,7 +361,7 @@ See `blog/` in the repository — a complete offline-capable blog SPA using:
 - `Database` for IndexedDB post persistence  
 - `queue` for offline enqueuing
 - `stagger` for card entry animations
-- Import map matching the published `@aduki/native/*` exports exactly
+- Import map matching the published `@adukiorg/native/*` exports exactly
 
 ```bash
 npm run serve

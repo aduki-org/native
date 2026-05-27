@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/router/match.js
  */
 
-import { register, match, clear, getRoutes } from '@aduki/native/router';
+import { register, match, clear, getRoutes } from '@adukiorg/native/router';
 
 describe('Router Matcher', () => {
   beforeEach(() => {

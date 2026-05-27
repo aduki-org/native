@@ -1,4 +1,4 @@
-# @aduki/native — Server Usage Guide
+# @adukiorg/native — Server Usage Guide
 
 How to use Node.js or Deno as a dev server while keeping your browser code 100% native ESM.
 No node_modules ever reach the browser. The import map handles everything on the client side.
@@ -18,7 +18,7 @@ No node_modules ever reach the browser. The import map handles everything on the
 ┌──────────────────────────────────────────────────────────┐
 │  Browser                                                 │
 │  Loads index.html → reads import map → resolves modules  │
-│  @aduki/native  ─── CDN (jsDelivr)                       │
+│  @adukiorg/native  ─── CDN (jsDelivr)                       │
 │  /src/app.js    ─── your server                          │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -62,8 +62,8 @@ The import map bridges the CDN library with your local `src/` modules:
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My App</title>
 
-  <!-- @aduki/native from CDN — browser resolves this, not Node -->
-  <script type="importmap" src="https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/dist/importmap.json"></script>
+  <!-- @adukiorg/native from CDN — browser resolves this, not Node -->
+  <script type="importmap" src="https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/dist/importmap.json"></script>
 
   <link rel="stylesheet" href="/public/styles/main.css">
 </head>
@@ -82,9 +82,9 @@ The import map bridges the CDN library with your local `src/` modules:
 Pure browser ESM — zero Node awareness:
 
 ```js
-import { ReactiveStore } from '@aduki/native/state';
-import { router }        from '@aduki/native/router';
-import { animate }       from '@aduki/native/animations';
+import { ReactiveStore } from '@adukiorg/native/state';
+import { router }        from '@adukiorg/native/router';
+import { animate }       from '@adukiorg/native/animations';
 
 // Lazy-load pages — the browser fetches these from your server
 router.on('/',       () => import('./pages/home.js'));
@@ -234,10 +234,10 @@ With either server running, here is the full chain for a page load:
 Browser loads index.html
   └── reads <script type="importmap" src="CDN/importmap.json">
         └── fetches importmap.json from jsDelivr
-              └── maps @aduki/native/* → CDN files
+              └── maps @adukiorg/native/* → CDN files
   └── reads <script type="module" src="/src/app.js">
         └── fetches /src/app.js from your local server
-              └── browser sees: import { ReactiveStore } from '@aduki/native/state'
+              └── browser sees: import { ReactiveStore } from '@adukiorg/native/state'
                     └── resolved via import map → CDN → dist/state.js
 ```
 

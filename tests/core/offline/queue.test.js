@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/offline/queue.js
  */
 
-import { queue } from '@aduki/native/offline';
+import { queue } from '@adukiorg/native/offline';
 
 describe('Offline Journal Queue', () => {
   beforeEach(async () => {

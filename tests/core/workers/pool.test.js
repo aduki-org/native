@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/workers/pool.js
  */
 
-import { WorkerPool } from '@aduki/native/workers';
+import { WorkerPool } from '@adukiorg/native/workers';
 
 describe('Worker Thread Pool', () => {
   let originalWorker;

@@ -63,7 +63,7 @@ async function serve(req, res) {
 }
 
 createServer(serve).listen(port, () => {
-  console.log(`\n  @aduki/native dev server`);
+  console.log(`\n  @adukiorg/native dev server`);
   console.log(`  Local:  http://localhost:${port}/`);
   console.log(`  Blog:   http://localhost:${port}/blog/\n`);
 });

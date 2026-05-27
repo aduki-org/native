@@ -1,16 +1,16 @@
-# @aduki/native
+# @adukiorg/native
 
 > Native-first web platform library. Pure browser ESM — no build step, no bundler, no framework lock-in.
 
-[![npm](https://img.shields.io/npm/v/@aduki/native)](https://www.npmjs.com/package/@aduki/native)
-[![license](https://img.shields.io/npm/l/@aduki/native)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/@adukiorg/native)](https://www.npmjs.com/package/@adukiorg/native)
+[![license](https://img.shields.io/npm/l/@adukiorg/native)](./LICENSE)
 [![tests](https://img.shields.io/badge/tests-70%20passing-brightgreen)](#testing)
 
 ---
 
 ## What is this?
 
-`@aduki/native` is a modular, zero-dependency platform library built entirely on top of browser-native APIs:
+`@adukiorg/native` is a modular, zero-dependency platform library built entirely on top of browser-native APIs:
 
 | Module | What it wraps |
 |---|---|
@@ -34,7 +34,7 @@ No virtual DOM. No transpilation. Ships as plain `.js` files — `src/` is the d
 ## Installation
 
 ```bash
-npm install @aduki/native
+npm install @adukiorg/native
 ```
 
 ---
@@ -44,18 +44,18 @@ npm install @aduki/native
 The package ships an `importmap.json`. Reference it with a single `src` attribute — no copying, no maintaining a list:
 
 ```html
-<script type="importmap" src="https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/importmap.json"></script>
+<script type="importmap" src="https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/importmap.json"></script>
 <script type="module" src="app.js"></script>
 ```
 
 That's it. Then in `app.js`:
 
 ```js
-import { ReactiveStore }    from '@aduki/native/state';
-import { api }              from '@aduki/native/api';
-import { animate, stagger } from '@aduki/native/animations';
-import { Database }         from '@aduki/native/storage';
-import { queue }            from '@aduki/native/offline';
+import { ReactiveStore }    from '@adukiorg/native/state';
+import { api }              from '@adukiorg/native/api';
+import { animate, stagger } from '@adukiorg/native/animations';
+import { Database }         from '@adukiorg/native/storage';
+import { queue }            from '@adukiorg/native/offline';
 ```
 
 > **Pinning** — swap `@0.1.0` for `@latest` to always track the newest release, or pin for reproducible deploys.
@@ -72,15 +72,15 @@ The simplest setup. One import map line, then plain ESM modules. Serve with any 
 
 ```html
 <!-- index.html -->
-<script type="importmap" src="https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/dist/importmap.json"></script>
+<script type="importmap" src="https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/dist/importmap.json"></script>
 <script type="module" src="app.js"></script>
 ```
 
 ```js
 // app.js
-import { ReactiveStore } from '@aduki/native/state';
-import { animate }       from '@aduki/native/animations';
-import { Database }      from '@aduki/native/storage';
+import { ReactiveStore } from '@adukiorg/native/state';
+import { animate }       from '@adukiorg/native/animations';
+import { Database }      from '@adukiorg/native/storage';
 
 const store = new ReactiveStore({ count: 0 });
 ```
@@ -91,10 +91,10 @@ No bundler. No config. No build command.
 
 ### Path 2 — Bundle your own app
 
-If you are bundling your own project, `@aduki/native` resolves automatically through its `package.json` exports map. Install it and import — your bundler handles the rest.
+If you are bundling your own project, `@adukiorg/native` resolves automatically through its `package.json` exports map. Install it and import — your bundler handles the rest.
 
 ```bash
-npm install @aduki/native
+npm install @adukiorg/native
 ```
 
 **esbuild:**
@@ -107,7 +107,7 @@ await esbuild.build({
   bundle:  true,
   format:  'esm',
   outfile: 'public/app.js',
-  // @aduki/native tree-shakes automatically from node_modules
+  // @adukiorg/native tree-shakes automatically from node_modules
 });
 ```
 
@@ -122,20 +122,20 @@ await Bun.build({
 });
 ```
 
-Your bundler pulls only the `@aduki/native` modules you actually import. No import map needed in the output.
+Your bundler pulls only the `@adukiorg/native` modules you actually import. No import map needed in the output.
 
 ---
 
 ### Path 3 — Self-host the dist files
 
-Download `dist/` from the CDN or copy it from `node_modules/@aduki/native/dist/` and serve from your own origin. Then adjust the import map to your server path:
+Download `dist/` from the CDN or copy it from `node_modules/@adukiorg/native/dist/` and serve from your own origin. Then adjust the import map to your server path:
 
 ```html
 <script type="importmap">
   {
     "imports": {
-      "@aduki/native/state": "/vendor/native/state.js",
-      "@aduki/native/api":   "/vendor/native/api.js"
+      "@adukiorg/native/state": "/vendor/native/state.js",
+      "@adukiorg/native/api":   "/vendor/native/api.js"
     }
   }
 </script>
@@ -149,7 +149,7 @@ Download `dist/` from the CDN or copy it from `node_modules/@aduki/native/dist/`
 ### Reactive State
 
 ```js
-import { ReactiveStore } from '@aduki/native/state';
+import { ReactiveStore } from '@adukiorg/native/state';
 
 const store = new ReactiveStore({ count: 0, theme: 'dark' });
 
@@ -164,7 +164,7 @@ store.set('count', 2);  // batched — only one notification fires
 ### Network Requests
 
 ```js
-import { api, PlatformError } from '@aduki/native/api';
+import { api, PlatformError } from '@adukiorg/native/api';
 
 try {
   const data = await api.get('https://api.example.com/posts');
@@ -179,7 +179,7 @@ try {
 ### IndexedDB Storage
 
 ```js
-import { Database } from '@aduki/native/storage';
+import { Database } from '@adukiorg/native/storage';
 
 const db = new Database('myapp', 1, [
   (db) => db.createObjectStore('posts')
@@ -193,7 +193,7 @@ const post = await db.get('posts', 'post-1');
 ### Animations
 
 ```js
-import { animate, stagger } from '@aduki/native/animations';
+import { animate, stagger } from '@adukiorg/native/animations';
 
 // Single element
 animate(el, [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
@@ -209,8 +209,8 @@ stagger(Array.from(cards), [
 ### Offline Queue
 
 ```js
-import { queue }   from '@aduki/native/offline';
-import { check }   from '@aduki/native/offline';
+import { queue }   from '@adukiorg/native/offline';
+import { check }   from '@adukiorg/native/offline';
 
 if (!check()) {
   // Not online — enqueue for later
@@ -227,7 +227,7 @@ for (const task of queue.list()) {
 ### Client-Side Router
 
 ```js
-import { register, navigate } from '@aduki/native/router';
+import { register, navigate } from '@adukiorg/native/router';
 
 register('/posts/:id', async ({ params }) => {
   const post = await fetchPost(params.id);
@@ -240,7 +240,7 @@ navigate('/posts/42');
 ### Web Crypto
 
 ```js
-import { uuid, hash, encrypt, decrypt } from '@aduki/native/security';
+import { uuid, hash, encrypt, decrypt } from '@adukiorg/native/security';
 
 const id  = uuid();                         // crypto.randomUUID()
 const sig = await hash('Hello', 'SHA-256'); // hex string

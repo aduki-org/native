@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/api/stream.js
  */
 
-import { createNDJSONTransform, stream } from '@aduki/native/api';
+import { createNDJSONTransform, stream } from '@adukiorg/native/api';
 
 describe('progressive Streams API', () => {
   it('should parse NDJSON chunk streams correctly across boundary segments', async () => {

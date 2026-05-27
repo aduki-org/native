@@ -52,10 +52,10 @@ async function build() {
   }));
 
   // Generate dist/importmap.json pointing at the flat dist/ files
-  const base = 'https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/dist';
+  const base = 'https://cdn.jsdelivr.net/npm/@adukiorg/native@0.1.0/dist';
   const map = { imports: {} };
   for (const { out } of entries) {
-    const key = out === 'index' ? '@aduki/native' : `@aduki/native/${out}`;
+    const key = out === 'index' ? '@adukiorg/native' : `@adukiorg/native/${out}`;
     map.imports[key] = `${base}/${out}.js`;
   }
   await Bun.write('dist/importmap.json', JSON.stringify(map, null, 2) + '\n');

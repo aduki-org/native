@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/workers/locks.js
  */
 
-import { lock } from '@aduki/native/workers';
+import { lock } from '@adukiorg/native/workers';
 
 describe('Web Locks Synchronization', () => {
   it('should acquire locks and execute callbacks successfully', async () => {

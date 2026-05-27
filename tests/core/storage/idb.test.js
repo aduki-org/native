@@ -6,7 +6,7 @@
  * Source: plan.md Phase 6-A, core/storage/idb.js
  */
 
-import { Database } from '@aduki/native/storage';
+import { Database } from '@adukiorg/native/storage';
 
 describe('IndexedDB Database Adapter', () => {
   const dbName = 'test-idb-db';

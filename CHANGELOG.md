@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@aduki/native` will be documented here.
+All notable changes to `@adukiorg/native` will be documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
 Versioning follows [Semantic Versioning](https://semver.org/).
@@ -22,13 +22,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Added
 
 #### Package
-- Published as `@aduki/native` — pure browser ESM, zero build step
+- Published as `@adukiorg/native` — pure browser ESM, zero build step
 - Scoped subpath exports for every core module (`/api`, `/state`, `/storage`, etc.)
 - `"type": "module"` — fully native ESM, no CommonJS wrapper
 - `npm test` via `@web/test-runner` (real Chromium, no jsdom)
 - `npm run serve` via `@web/dev-server` on port 8080
 
-#### Core — `@aduki/native/api`
+#### Core — `@adukiorg/native/api`
 - `execute()` — fetch wrapper with AbortSignal, timeout, and `scheduler.postTask` integration
 - `PlatformError` — unified error shape across all network failures
 - `retry()` — exponential backoff with jitter and AbortSignal support
@@ -38,17 +38,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - `pipeline` — composable request/response middleware pipeline
 - Cache strategies: `cache-first`, `network-first`, `stale-while-revalidate`
 
-#### Core — `@aduki/native/state`
+#### Core — `@adukiorg/native/state`
 - `ReactiveStore` — Proxy-based reactive state with microtask-batched notifications
 - `setActiveSubscriber` / `getActiveSubscriber` — dependency tracking context
 - `derived()` — auto-tracked computed values that re-evaluate on dependency changes
 - `sync()` — BroadcastChannel cross-tab state synchronization
 
-#### Core — `@aduki/native/events`
+#### Core — `@adukiorg/native/events`
 - `EventBus` — typed pub/sub with wildcard patterns and AbortSignal cleanup
 - `events` — singleton global event bus instance
 
-#### Core — `@aduki/native/router`
+#### Core — `@adukiorg/native/router`
 - `register()` / `match()` — URL pattern registration and matching
 - `clear()` / `getRoutes()` — route registry management
 - `addGuard()` — async navigation guard hooks
@@ -57,36 +57,36 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Full programmatic history API: `navigate`, `replace`, `back`, `forward`, `go`, `current`, `entries`
 - `renderOutlet()` — declarative route outlet rendering
 
-#### Core — `@aduki/native/storage`
+#### Core — `@adukiorg/native/storage`
 - `Database` — Promise-wrapped IndexedDB with sequential migrations
 - `LRUCache` / `WeakLRUCache` — in-memory LRU caches with optional TTL
 - `storage` — unified tiered facade: memory → IndexedDB → Cache API → OPFS
 - `quota` — storage estimate and persistence request helpers
 
-#### Core — `@aduki/native/offline`
+#### Core — `@adukiorg/native/offline`
 - `queue` — IndexedDB-backed offline operation queue with FIFO dequeue
 - `check()` / `subscribe()` — connectivity detection and change subscriptions
 
-#### Core — `@aduki/native/animations`
+#### Core — `@adukiorg/native/animations`
 - `animate()` — WAAPI wrapper with AbortSignal and easing controls
 - `stagger()` — staggered multi-element animation groups with `finished` promise
 
-#### Core — `@aduki/native/workers`
+#### Core — `@adukiorg/native/workers`
 - `lock()` — Web Locks API facade with timeout and AbortSignal support
 - `WorkerPool` — managed pool of Web Workers with task queue and concurrency limits
 
-#### Core — `@aduki/native/security`
+#### Core — `@adukiorg/native/security`
 - `sanitize()` — XSS-safe HTML sanitizer using `DOMParser`
 - `uuid()` — `crypto.randomUUID()` wrapper
 - `hash()` — SHA-256/384/512 via Web Crypto API
 - `generateKey()` / `deriveKey()` — AES-GCM key generation and PBKDF2 derivation
 - `encrypt()` / `decrypt()` — AES-GCM symmetric encryption/decryption
 
-#### Core — `@aduki/native/platform`
+#### Core — `@adukiorg/native/platform`
 - `supports` — feature detection registry for 30+ browser APIs
 - `reset()` — cache reset utility (used in tests)
 
-#### Core — `@aduki/native/ui`
+#### Core — `@adukiorg/native/ui`
 - `BaseElement` — Shadow DOM base class for all custom elements
 - Design token cascade: primitive → semantic → component token layers
 
@@ -96,7 +96,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 #### Blog Demo
 - `blog/` — sample SPA demonstrating state, storage, offline queue, and animations
-- Import map mirrors the published `@aduki/native/*` subpath exports exactly
+- Import map mirrors the published `@adukiorg/native/*` subpath exports exactly
 
 [Unreleased]: https://github.com/aduki-org/native/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/aduki-org/native/releases/tag/v0.1.0
