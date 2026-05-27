@@ -9,14 +9,23 @@
  */
 
 // 1. Primitive Elements
-import { Button } from './primitives/button.js';
-import { Icon } from './primitives/icon.js';
-import { Badge } from './primitives/badge.js';
-import { Avatar } from './primitives/avatar.js';
-import { Divider } from './primitives/divider.js';
-import { Text } from './primitives/text.js';
-import { Link } from './primitives/link.js';
-import { Spinner } from './primitives/spinner.js';
+import './primitives/button/index.js';
+import './primitives/icon/index.js';
+import './primitives/badge/index.js';
+import './primitives/avatar/index.js';
+import './primitives/divider/index.js';
+import './primitives/text/index.js';
+import './primitives/link/index.js';
+import './primitives/spinner/index.js';
+
+const Button = typeof customElements !== 'undefined' ? customElements.get('ui-button') : null;
+const Icon = typeof customElements !== 'undefined' ? customElements.get('ui-icon') : null;
+const Badge = typeof customElements !== 'undefined' ? customElements.get('ui-badge') : null;
+const Avatar = typeof customElements !== 'undefined' ? customElements.get('ui-avatar') : null;
+const Divider = typeof customElements !== 'undefined' ? customElements.get('ui-divider') : null;
+const Text = typeof customElements !== 'undefined' ? customElements.get('ui-text') : null;
+const Link = typeof customElements !== 'undefined' ? customElements.get('ui-link') : null;
+const Spinner = typeof customElements !== 'undefined' ? customElements.get('ui-spinner') : null;
 
 // 2. Form Controls
 import { Input } from './forms/input.js';

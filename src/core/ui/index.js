@@ -3,13 +3,13 @@
  *
  * Public UI base entry point.
  * Aggregates BaseElement foundations, cooperative task scheduling, transition
- * orchestrators, templates, and safe reactive element observers.
+ * orchestrators, templates, declarative element factory, and safe reactive element observers.
  *
  * Source: doc 04 — Web Components §1, doc 12 — Performance §2
  */
 
 import { BaseElement } from './base.js';
-import { define } from './define.js';
+import { define, element } from './define.js';
 import { schedule, scheduleFrame, yieldTask } from './schedule.js';
 import { transition } from './transitions.js';
 import { template } from './template.js';
@@ -17,6 +17,7 @@ import * as observe from './observe.js';
 
 export const ui = {
   define,
+  element,
   schedule,
   scheduleFrame,
   yield: yieldTask,
@@ -28,6 +29,7 @@ export const ui = {
 export {
   BaseElement,
   define,
+  element,
   schedule,
   scheduleFrame,
   yieldTask,

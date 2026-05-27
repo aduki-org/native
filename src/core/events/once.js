@@ -18,7 +18,16 @@ export function once(target, type, options = {}) {
       return reject(new Error('Operation aborted'));
     }
 
+    let onAbort;
+
+    const cleanup = () => {
+      if (signal && onAbort) {
+        signal.removeEventListener('abort', onAbort);
+      }
+    };
+
     const callback = (event) => {
+      cleanup();
       resolve(event);
     };
 
@@ -30,9 +39,11 @@ export function once(target, type, options = {}) {
     });
 
     if (signal) {
-      signal.addEventListener('abort', () => {
+      onAbort = () => {
+        cleanup();
         reject(new Error('Operation aborted'));
-      });
+      };
+      signal.addEventListener('abort', onAbort, { once: true });
     }
   });
 }

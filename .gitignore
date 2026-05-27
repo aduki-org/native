@@ -10,3 +10,60 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# ── Rust ──────────────────────────────────────────────────────────────────────
+target/
+target
+**/*.rs.bk
+Cargo.lock
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Config secrets ────────────────────────────────────────────────────────────
+config/prod.toml
+config/staging.toml
+
+# ── Kubernetes secrets ────────────────────────────────────────────────────────
+k8/hermes/secret.yaml
+k8/postgres/secret.yaml
+k8/mongo/secret.yaml
+
+# ── ML models (large binaries — use Git LFS or ship in image) ─────────────────
+*.onnx
+*.bin
+
+# ── Proto generated ───────────────────────────────────────────────────────────
+crates/proto/src/generated/
+
+# ── Editor / IDE ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+
+# ── Test artifacts ────────────────────────────────────────────────────────────
+/tmp/
+*.prof
+lcov.info
+coverage/
+
+# ── cargo-deny / audit ────────────────────────────────────────────────────────
+advisory-db/
+.junie
+plans_refs/
+plans_refs/*

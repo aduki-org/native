@@ -62,11 +62,27 @@ export async function sanitizer() {
   };
 }
 
+export async function scheduler() {
+  if (supports.schedulerPostTask) {
+    return globalThis.scheduler;
+  }
+  await import('./polyfills/scheduler.js');
+  return globalThis.scheduler;
+}
+
+export async function yieldTask() {
+  const s = await scheduler();
+  return s.yield();
+}
+
 export default {
   urlPattern,
   navigation,
   popover,
   shadow,
   anchor,
-  sanitizer
+  sanitizer,
+  scheduler,
+  yield: yieldTask
 };
+

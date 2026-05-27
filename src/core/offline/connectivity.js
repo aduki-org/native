@@ -72,10 +72,13 @@ export function subscribe(fn, signal) {
 
   const dispose = () => {
     listeners.delete(fn);
+    if (signal) {
+      signal.removeEventListener('abort', dispose);
+    }
   };
 
   if (signal) {
-    signal.addEventListener('abort', dispose);
+    signal.addEventListener('abort', dispose, { once: true });
   }
 
   return dispose;

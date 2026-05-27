@@ -1,0 +1,36 @@
+/* src/elements/primitives/avatar/style.css */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size, var(--space-8));
+  height: var(--avatar-size, var(--space-8));
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-interactive-disabled);
+  color: var(--color-content-secondary);
+  font-family: var(--font-family-sans);
+  font-size: calc(var(--avatar-size, var(--space-8)) * 0.4);
+  font-weight: var(--font-weight-medium);
+  user-select: none;
+  border: var(--space-px) solid var(--color-border-default);
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+:host([size]) {
+  width: var(--avatar-custom-size);
+  height: var(--avatar-custom-size);
+  font-size: calc(var(--avatar-custom-size) * 0.4);
+}
+
+span {
+  display: inline-block;
+  text-transform: uppercase;
+}

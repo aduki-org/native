@@ -43,19 +43,55 @@ export function createNDJSONTransform() {
   });
 }
 
+import { events } from './events/index.js';
+
 /**
  * Initiates a streaming request and yields parsed JSON chunks as an AsyncIterable.
  */
 export async function* stream(url, opts = {}) {
   const { signal, ...fetchOpts } = opts;
-  const response = await fetch(url, { ...fetchOpts, signal });
+
+  // Generate unique request ID to scope streaming telemetry events
+  const requestId = opts.requestId || (typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36));
+
+  // Register request-specific temporary listeners
+  const disposes = [];
+  if (opts.on && typeof opts.on === 'object') {
+    for (const [event, handler] of Object.entries(opts.on)) {
+      if (typeof handler === 'function') {
+        const dispose = events.on(event, (e) => {
+          if (e.detail?.requestId === requestId) {
+            handler(e);
+          }
+        });
+        disposes.push(dispose);
+      }
+    }
+  }
+
+  let response;
+  try {
+    response = await fetch(url, { ...fetchOpts, signal });
+  } catch (err) {
+    events.emit('error', { error: err, requestId });
+    events.emit('failed', { error: err, requestId });
+    throw err;
+  }
 
   if (!response.ok) {
-    throw new Error(`Streaming failed: HTTP ${response.status} ${response.statusText}`);
+    const err = new Error(`Streaming failed: HTTP ${response.status} ${response.statusText}`);
+    events.emit('status:' + response.status, { response, requestId });
+    events.emit('failed', { response, requestId });
+    events.emit('error', { error: err, requestId });
+    throw err;
   }
 
   if (!response.body) {
-    throw new Error('Streaming failed: Response body is not readable');
+    const err = new Error('Streaming failed: Response body is not readable');
+    events.emit('error', { error: err, requestId });
+    throw err;
   }
 
   const reader = response.body
@@ -65,11 +101,27 @@ export async function* stream(url, opts = {}) {
 
   try {
     while (true) {
-      const { value, done } = await reader.read();
+      let result;
+      try {
+        result = await reader.read();
+      } catch (err) {
+        events.emit('error', { error: err, requestId });
+        throw err;
+      }
+
+      const { value, done } = result;
       if (done) break;
+
+      // Emit chunk telemetry event locally and globally
+      events.emit('chunk', { chunk: value, requestId });
+
       yield value;
     }
   } finally {
     reader.releaseLock();
+    // Guarantee auto-cleanup of streaming listeners
+    for (const dispose of disposes) {
+      dispose();
+    }
   }
 }

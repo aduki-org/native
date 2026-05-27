@@ -48,7 +48,12 @@ export function deserializeRequest(serialized) {
   };
 
   if (serialized.body) {
-    options.body = serialized.body;
+    const isJson = options.headers.get('content-type')?.includes('application/json');
+    if (isJson && typeof serialized.body === 'object' && !(serialized.body instanceof ArrayBuffer) && !(serialized.body instanceof Blob)) {
+      options.body = JSON.stringify(serialized.body);
+    } else {
+      options.body = serialized.body;
+    }
   }
 
   return new Request(serialized.url, options);

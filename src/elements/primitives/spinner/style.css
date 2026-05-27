@@ -1,0 +1,20 @@
+/* src/elements/primitives/spinner/style.css */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Component Tokens — Semantic Reference Only */
+  --spinner-size:  var(--space-6);
+  --spinner-color: var(--color-interactive);
+  --spinner-width: var(--space-0-5);
+}
+
+.ring {
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  border: var(--spinner-width) solid var(--color-border-default);
+  border-top-color: var(--spinner-color);
+  border-radius: var(--radius-full);
+  box-sizing: border-box;
+}

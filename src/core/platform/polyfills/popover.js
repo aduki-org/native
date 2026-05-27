@@ -36,6 +36,16 @@ class PopoverPolyfill {
       }
       if (this.hasAttribute('data-popover-open')) return;
 
+      // Clean up previous event listeners or observers if any existed
+      if (this._popoverDismiss) {
+        document.removeEventListener('pointerdown', this._popoverDismiss);
+        this._popoverDismiss = null;
+      }
+      if (this._popoverObserver) {
+        this._popoverObserver.disconnect();
+        this._popoverObserver = null;
+      }
+
       this.setAttribute('data-popover-open', '');
       
       // Simulating top-layer styling
@@ -48,13 +58,26 @@ class PopoverPolyfill {
         const dismiss = (e) => {
           if (!this.contains(e.target) && e.target !== this) {
             this.hidePopover();
-            document.removeEventListener('pointerdown', dismiss);
           }
         };
+        this._popoverDismiss = dismiss;
         // Defer attachment to prevent immediate closing during current click event
         setTimeout(() => {
-          document.addEventListener('pointerdown', dismiss);
+          if (this.hasAttribute('data-popover-open')) {
+            document.addEventListener('pointerdown', dismiss);
+          }
         }, 0);
+      }
+
+      // MutationObserver to automatically clean up when popover is unmounted from DOM while open
+      if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(() => {
+          if (!document.contains(this)) {
+            this.hidePopover();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        this._popoverObserver = observer;
       }
 
       this.dispatchEvent(new ToggleEvent('toggle', {
@@ -69,6 +92,15 @@ class PopoverPolyfill {
       this.removeAttribute('data-popover-open');
       this.style.position = '';
       this.style.zIndex = '';
+
+      if (this._popoverDismiss) {
+        document.removeEventListener('pointerdown', this._popoverDismiss);
+        this._popoverDismiss = null;
+      }
+      if (this._popoverObserver) {
+        this._popoverObserver.disconnect();
+        this._popoverObserver = null;
+      }
 
       this.dispatchEvent(new ToggleEvent('toggle', {
         oldState: 'open',

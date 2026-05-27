@@ -10,16 +10,37 @@
  * Source: doc 11 — Networking §6
  */
 
+import { cache as apiCache } from './caches/index.js';
+
 const CACHE_NAME = 'platform-api-cache';
 
 /**
- * Handles request caching using declared strategies.
+ * Handles request caching using declared strategies and TTL controls.
  */
 export async function handle(descriptor, executeFetch) {
   const { cache: strategy, url, method = 'GET' } = descriptor;
 
   // Caching is strictly limited to GET requests and when Cache API is present
-  if (!strategy || method !== 'GET' || typeof caches === 'undefined') {
+  if (method !== 'GET' || typeof caches === 'undefined') {
+    return executeFetch(descriptor);
+  }
+
+  // Check for fine-grained TTL / Expiry options
+  const ttl = descriptor.expiry || descriptor.ttl || (strategy && typeof strategy === 'object' ? strategy.expiry || strategy.ttl : null);
+
+  if (ttl) {
+    const cached = await apiCache.get(url);
+    if (cached) return cached;
+
+    const response = await executeFetch(descriptor);
+    if (response.ok) {
+      await apiCache.set(url, response.clone(), ttl);
+    }
+    return response;
+  }
+
+  // Fallback to legacy string-based strategies if cache strategy is specified
+  if (!strategy || typeof strategy !== 'string') {
     return executeFetch(descriptor);
   }
 
@@ -90,11 +111,10 @@ export async function handle(descriptor, executeFetch) {
  * Clears specific entry or entire API cache store.
  */
 export async function invalidate(url) {
-  if (typeof caches === 'undefined') return;
-  const storage = await caches.open(CACHE_NAME);
   if (url) {
-    await storage.delete(url);
+    await apiCache.delete(url);
   } else {
-    await caches.delete(CACHE_NAME);
+    await apiCache.clear();
   }
 }
+

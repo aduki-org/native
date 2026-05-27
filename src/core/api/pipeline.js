@@ -50,6 +50,9 @@ export class Pipeline {
       const result = await interceptor(current);
       if (result instanceof Response) {
         // Short circuit: Return mock or cached response
+        try {
+          result.requestId = current.requestId;
+        } catch (_) {}
         return this.#runInbound(result);
       }
       if (result) {
@@ -63,10 +66,16 @@ export class Pipeline {
       response = await executeFetch(current);
     } catch (err) {
       // Pass network/timeout errors to the inbound pipeline for normalization
+      try {
+        err.requestId = current.requestId;
+      } catch (_) {}
       return this.#runInbound(err);
     }
 
     // 3. Inbound Pipeline
+    try {
+      response.requestId = current.requestId;
+    } catch (_) {}
     return this.#runInbound(response);
   }
 

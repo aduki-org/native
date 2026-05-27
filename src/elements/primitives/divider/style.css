@@ -1,0 +1,39 @@
+/* src/elements/primitives/divider/style.css */
+
+:host {
+  display: flex;
+  align-self: stretch;
+  /* Component Tokens — Semantic Reference Only */
+  --divider-color: var(--color-border-default);
+}
+
+hr {
+  border: none;
+  background-color: var(--divider-color);
+  margin: 0;
+  padding: 0;
+}
+
+:host([orientation="horizontal"]) {
+  width: 100%;
+  flex-direction: column;
+  padding-block: var(--divider-space, var(--space-2));
+}
+
+:host([orientation="horizontal"]) hr {
+  width: 100%;
+  height: var(--space-px);
+}
+
+:host([orientation="vertical"]) {
+  height: 100%;
+  display: inline-flex;
+  flex-direction: row;
+  padding-inline: var(--divider-space, var(--space-2));
+}
+
+:host([orientation="vertical"]) hr {
+  height: 100%;
+  width: var(--space-px);
+  align-self: stretch;
+}

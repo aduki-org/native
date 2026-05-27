@@ -54,10 +54,13 @@ export class SyncManager {
 
     const dispose = () => {
       window.removeEventListener('core:sync-fallback', listener);
+      if (signal) {
+        signal.removeEventListener('abort', dispose);
+      }
     };
 
     if (signal) {
-      signal.addEventListener('abort', dispose);
+      signal.addEventListener('abort', dispose, { once: true });
     }
 
     return dispose;

@@ -1,0 +1,25 @@
+/* src/elements/primitives/text/style.css */
+
+:host {
+  display: inline;
+  /* Component Tokens — Semantic Reference Only */
+  --text-size:   var(--font-size-base);
+  --text-weight: var(--font-weight-regular);
+  --text-family: var(--font-family-sans);
+  --text-height: var(--line-height-normal);
+  --text-color:  var(--color-content-primary);
+}
+
+:host([block]) {
+  display: block;
+}
+
+#root {
+  font-size: var(--text-size);
+  font-weight: var(--text-weight);
+  font-family: var(--text-family);
+  line-height: var(--text-height);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+}

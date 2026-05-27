@@ -6,14 +6,16 @@
  * Source: plan.md Phase 6-A, elements/primitives/button.js
  */
 
-import '../../../src/elements/primitives/button.js';
+import '../../../src/elements/primitives/button/index.js';
 
 describe('<ui-button> Custom Element', () => {
   let btn;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     btn = document.createElement('ui-button');
     document.body.appendChild(btn);
+    // Await async resources preloading and connectedCallback compilation
+    await new Promise(resolve => setTimeout(resolve, 50));
   });
 
   afterEach(() => {

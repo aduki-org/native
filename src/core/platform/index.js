@@ -32,6 +32,11 @@ if (typeof window !== 'undefined') {
       console.error('Failed to eagerly bootstrap Navigation polyfill:', err);
     });
   }
+  if (!supports.schedulerPostTask) {
+    import('./polyfills/scheduler.js').catch(err => {
+      console.error('Failed to eagerly bootstrap Scheduler polyfill:', err);
+    });
+  }
 }
 
 export { supports, guard };

@@ -7,6 +7,7 @@
  */
 
 import { queue } from '@adukiorg/native/offline';
+import { deserializeRequest } from '../../../src/sw/queue.js';
 
 describe('Offline Journal Queue', () => {
   beforeEach(async () => {
@@ -55,5 +56,44 @@ describe('Offline Journal Queue', () => {
     if (finalTasks.length !== 0) {
       throw new Error('Expected task to be completely evicted');
     }
+  });
+
+  it('should deserialize a plain object request body to a JSON string if Content-Type is application/json', () => {
+    const serialized = {
+      url: 'https://api.example.com/submit',
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: { name: 'Alice', age: 30 }
+    };
+
+    const request = deserializeRequest(serialized);
+    
+    if (request.method !== 'POST') {
+      throw new Error(`Expected POST method, got ${request.method}`);
+    }
+    
+    return request.text().then((text) => {
+      if (text !== '{"name":"Alice","age":30}') {
+        throw new Error(`Expected JSON string body, got: ${text}`);
+      }
+    });
+  });
+
+  it('should preserve standard bodies (e.g. ArrayBuffer) when deserializing', () => {
+    const buffer = new TextEncoder().encode('raw buffer content');
+    const serialized = {
+      url: 'https://api.example.com/binary',
+      method: 'PUT',
+      headers: { 'content-type': 'application/octet-stream' },
+      body: buffer
+    };
+
+    const request = deserializeRequest(serialized);
+    return request.arrayBuffer().then((bodyBuffer) => {
+      const text = new TextDecoder().decode(bodyBuffer);
+      if (text !== 'raw buffer content') {
+        throw new Error(`Expected raw buffer content, got: ${text}`);
+      }
+    });
   });
 });

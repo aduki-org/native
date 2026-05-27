@@ -1,0 +1,67 @@
+/* src/elements/primitives/badge/style.css */
+
+:host {
+  display: inline-flex;
+  /* Component Tokens — Semantic Reference Only */
+  --badge-radius: var(--radius-full);
+  --badge-font:   var(--font-family-sans);
+  --badge-weight: var(--font-weight-semibold);
+  --badge-size:   var(--font-size-xs);
+  
+  /* Mapped theme defaults */
+  --badge-bg:     var(--color-surface-elevated);
+  --badge-color:  var(--color-content-secondary);
+  --badge-border: var(--color-border-default);
+}
+
+span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--badge-font);
+  font-size: var(--badge-size);
+  font-weight: var(--badge-weight);
+  background: var(--badge-bg);
+  color: var(--badge-color);
+  border: var(--space-px) solid var(--badge-border);
+  border-radius: var(--badge-radius);
+  padding: var(--badge-padding-y, var(--space-0-5)) var(--badge-padding-x, var(--space-2));
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Variant mappings using semantic tokens only */
+:host([variant="success"]) {
+  --badge-bg:     var(--color-feedback-success);
+  --badge-color:  var(--color-content-inverse);
+  --badge-border: transparent;
+}
+
+:host([variant="warning"]) {
+  --badge-bg:     var(--color-feedback-warning);
+  --badge-color:  var(--color-content-inverse);
+  --badge-border: transparent;
+}
+
+:host([variant="error"]) {
+  --badge-bg:     var(--color-feedback-error);
+  --badge-color:  var(--color-content-inverse);
+  --badge-border: transparent;
+}
+
+:host([variant="info"]) {
+  --badge-bg:     var(--color-feedback-info);
+  --badge-color:  var(--color-content-inverse);
+  --badge-border: transparent;
+}
+
+/* Size scaling custom offsets */
+:host([size="sm"]) span {
+  font-size: 0.65rem;
+  padding: var(--space-px) var(--space-1);
+}
+
+:host([size="lg"]) span {
+  font-size: var(--font-size-sm);
+  padding: var(--space-1) var(--space-3);
+}

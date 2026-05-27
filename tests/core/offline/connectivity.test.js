@@ -80,4 +80,78 @@ describe('Connectivity Monitor', () => {
       throw new Error(`Expected cached state to avoid redundant probe. fetchCount is ${fetchCount}`);
     }
   });
+
+  it('should clean up abort event listeners on signal to prevent memory leaks', () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    let added = 0;
+    let removed = 0;
+
+    const originalAdd = signal.addEventListener;
+    const originalRemove = signal.removeEventListener;
+
+    signal.addEventListener = function(type) {
+      if (type === 'abort') added++;
+      return originalAdd.apply(this, arguments);
+    };
+
+    signal.removeEventListener = function(type) {
+      if (type === 'abort') removed++;
+      return originalRemove.apply(this, arguments);
+    };
+
+    const dispose = subscribe(() => {}, signal);
+
+    if (added !== 1) {
+      throw new Error(`Expected 1 abort listener added, got ${added}`);
+    }
+
+    dispose();
+
+    if (removed !== 1) {
+      throw new Error(`Expected 1 abort listener removed, got ${removed}`);
+    }
+
+    // Restore
+    signal.addEventListener = originalAdd;
+    signal.removeEventListener = originalRemove;
+  });
+
+  it('should clean up abort event listeners when signal aborts', () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    let added = 0;
+    let removed = 0;
+
+    const originalAdd = signal.addEventListener;
+    const originalRemove = signal.removeEventListener;
+
+    signal.addEventListener = function(type) {
+      if (type === 'abort') added++;
+      return originalAdd.apply(this, arguments);
+    };
+
+    signal.removeEventListener = function(type) {
+      if (type === 'abort') removed++;
+      return originalRemove.apply(this, arguments);
+    };
+
+    subscribe(() => {}, signal);
+
+    if (added !== 1) {
+      throw new Error(`Expected 1 abort listener added, got ${added}`);
+    }
+
+    controller.abort();
+
+    if (removed !== 1) {
+      throw new Error(`Expected 1 abort listener removed, got ${removed}`);
+    }
+
+    // Restore
+    signal.addEventListener = originalAdd;
+    signal.removeEventListener = originalRemove;
+  });
 });

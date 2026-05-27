@@ -33,10 +33,13 @@ export class EventBus {
           this.#listeners.delete(type);
         }
       }
+      if (signal) {
+        signal.removeEventListener('abort', dispose);
+      }
     };
 
     if (signal) {
-      signal.addEventListener('abort', dispose);
+      signal.addEventListener('abort', dispose, { once: true });
     }
 
     return dispose;

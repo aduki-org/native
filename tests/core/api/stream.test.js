@@ -69,4 +69,48 @@ describe('progressive Streams API', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('should support request-scoped chunk events with auto-cleanup', async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = async () => {
+      const streamInstance = new ReadableStream({
+        start(controller) {
+          const encoder = new TextEncoder();
+          controller.enqueue(encoder.encode('{"item": "first"}\n'));
+          controller.enqueue(encoder.encode('{"item": "second"}\n'));
+          controller.close();
+        }
+      });
+
+      return {
+        ok: true,
+        body: streamInstance
+      };
+    };
+
+    try {
+      const receivedChunks = [];
+      const streamIterable = stream('/api/chunks', {
+        on: {
+          chunk: (e) => {
+            receivedChunks.push(e.detail.chunk);
+          }
+        }
+      });
+
+      for await (const chunk of streamIterable) {
+        // consume stream
+      }
+
+      if (receivedChunks.length !== 2) {
+        throw new Error(`Expected 2 events to trigger chunk callback, got ${receivedChunks.length}`);
+      }
+      if (receivedChunks[0].item !== 'first' || receivedChunks[1].item !== 'second') {
+        throw new Error(`Expected first and second chunks, got ${JSON.stringify(receivedChunks)}`);
+      }
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });
