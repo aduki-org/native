@@ -1,0 +1,64 @@
+/**
+ * tokens/semantic/light.css
+ *
+ * Semantic design token assignments for the default Light theme.
+ * Standardizes semantic mapping to primitives and sets up GPU-accelerated theme transition rules on :root.
+ * Source: doc 26 §3, §6
+ */
+
+:root {
+  /* Surfaces */
+  --color-surface-page:      var(--color-neutral-50);
+  --color-surface-card:      var(--color-neutral-0);
+  --color-surface-elevated:  var(--color-neutral-0);
+  --color-surface-inverse:   var(--color-neutral-900);
+
+  /* Content (Text & Icons) */
+  --color-content-primary:   var(--color-neutral-900);
+  --color-content-secondary: var(--color-neutral-600);
+  --color-content-disabled:  var(--color-neutral-400);
+  --color-content-inverse:   var(--color-neutral-50);
+  --color-content-link:      var(--color-brand-600);
+
+  /* Interactive Elements */
+  --color-interactive:          var(--color-brand-500);
+  --color-interactive-hover:    var(--color-brand-600);
+  --color-interactive-active:   var(--color-brand-700);
+  --color-interactive-focus:    var(--color-brand-500);
+  --color-interactive-disabled: var(--color-neutral-300);
+
+  /* Feedback Semantics */
+  --color-feedback-success: var(--color-success-500);
+  --color-feedback-warning: var(--color-warning-500);
+  --color-feedback-error:   var(--color-error-500);
+  --color-feedback-info:    var(--color-info-500);
+
+  /* Borders */
+  --color-border-default:  var(--color-neutral-200);
+  --color-border-strong:   var(--color-neutral-400);
+  --color-border-focus:    var(--color-brand-500);
+
+  /* Automatic theme morph configuration */
+  transition:
+    --color-surface-page 220ms var(--ease-out),
+    --color-surface-card 220ms var(--ease-out),
+    --color-surface-elevated 220ms var(--ease-out),
+    --color-surface-inverse 220ms var(--ease-out),
+    --color-content-primary 180ms var(--ease-out),
+    --color-content-secondary 180ms var(--ease-out),
+    --color-content-disabled 180ms var(--ease-out),
+    --color-content-inverse 180ms var(--ease-out),
+    --color-content-link 180ms var(--ease-out),
+    --color-interactive 180ms var(--ease-out),
+    --color-interactive-hover 180ms var(--ease-out),
+    --color-interactive-active 180ms var(--ease-out),
+    --color-border-default 180ms var(--ease-out),
+    --color-border-strong 180ms var(--ease-out),
+    --color-border-focus 180ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none !important;
+  }
+}

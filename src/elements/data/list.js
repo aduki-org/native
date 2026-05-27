@@ -1,0 +1,69 @@
+/**
+ * src/elements/data/list.js
+ *
+ * Data Element: <ui-list>
+ * Flexible list wrapper supplying clean spacer dividers, bordered panels,
+ * and semantic token alignments.
+ *
+ * Source: doc 04 — Web Components §3, doc 05 — Native UI Primitives §3
+ */
+
+import { Base } from '../base.js';
+
+const tpl = document.createElement('template');
+tpl.innerHTML = `
+  <style>
+    :host {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      font-family: var(--font-family-sans);
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    :host([bordered]) .list {
+      border: var(--space-px) solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-elevated);
+      overflow: hidden;
+    }
+
+    /* Target items slotted inside list */
+    ::slotted(ui-list-item), ::slotted(div[role="listitem"]) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: var(--space-px) solid var(--color-border-default);
+      box-sizing: border-box;
+      transition: background-color var(--duration-fast) var(--ease-out);
+    }
+
+    ::slotted(ui-list-item:last-child), ::slotted(div[role="listitem"]:last-child) {
+      border-bottom: none;
+    }
+
+    ::slotted(ui-list-item:hover), ::slotted(div[role="listitem"]:hover) {
+      background: var(--color-surface-page);
+    }
+  </style>
+  <div class="list" part="list" role="list">
+    <slot></slot>
+  </div>
+`;
+
+export class List extends Base {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.append(tpl.content.cloneNode(true));
+  }
+}
+
+customElements.define('ui-list', List);

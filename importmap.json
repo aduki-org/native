@@ -1,0 +1,17 @@
+{
+  "imports": {
+    "@aduki/native":             "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/index.js",
+    "@aduki/native/api":         "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/api/index.js",
+    "@aduki/native/state":       "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/state/index.js",
+    "@aduki/native/events":      "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/events/index.js",
+    "@aduki/native/router":      "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/router/index.js",
+    "@aduki/native/storage":     "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/storage/index.js",
+    "@aduki/native/offline":     "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/offline/index.js",
+    "@aduki/native/animations":  "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/animations/index.js",
+    "@aduki/native/workers":     "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/workers/index.js",
+    "@aduki/native/security":    "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/security/index.js",
+    "@aduki/native/platform":    "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/platform/supports.js",
+    "@aduki/native/ui":          "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/core/ui/index.js",
+    "@aduki/native/elements":    "https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/src/elements/index.js"
+  }
+}

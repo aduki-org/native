@@ -1,0 +1,31 @@
+/**
+ * tokens/registered/dimensions.css
+ *
+ * Houdini @property registrations for animatable dimension/spacing tokens.
+ * This permits smooth, type-checked transitions on spacing and layout.
+ * Source: doc 26 §5
+ */
+
+@property --space-4 {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1rem;
+}
+
+@property --radius-md {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0.375rem;
+}
+
+@property --font-size-base {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 1rem;
+}
+
+@property --duration-normal {
+  syntax: '<time>';
+  inherits: true;
+  initial-value: 200ms;
+}

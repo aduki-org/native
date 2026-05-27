@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "core/platform": ["src/core/platform/supports.js"],
+      "core/api": ["src/core/api/index.js"],
+      "core/router": ["src/core/router/index.js"],
+      "core/state": ["src/core/state/index.js"],
+      "core/events": ["src/core/events/index.js"],
+      "core/storage": ["src/core/storage/index.js"],
+      "core/workers": ["src/core/workers/index.js"],
+      "core/ui": ["src/core/ui/index.js"],
+      "core/security": ["src/core/security/index.js"],
+      "core/offline": ["src/core/offline/index.js"],
+      "core/animations": ["src/core/animations/index.js"],
+      "elements": ["src/elements/index.js"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

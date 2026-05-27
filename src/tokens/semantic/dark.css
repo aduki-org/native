@@ -1,0 +1,61 @@
+/**
+ * tokens/semantic/dark.css
+ *
+ * Semantic design token overrides for the Dark theme.
+ * Integrates with data-theme attribute and OS media preference (guarded to respect user selection).
+ * Source: doc 26 §3
+ */
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --color-surface-page:      var(--color-neutral-950);
+  --color-surface-card:      var(--color-neutral-900);
+  --color-surface-elevated:  var(--color-neutral-800);
+  --color-surface-inverse:   var(--color-neutral-50);
+
+  /* Content (Text & Icons) */
+  --color-content-primary:   var(--color-neutral-5);
+  --color-content-secondary: var(--color-neutral-400);
+  --color-content-disabled:  var(--color-neutral-600);
+  --color-content-inverse:   var(--color-neutral-900);
+  --color-content-link:      var(--color-brand-300);
+
+  /* Interactive Elements */
+  --color-interactive:          var(--color-brand-400);
+  --color-interactive-hover:    var(--color-brand-300);
+  --color-interactive-active:   var(--color-brand-200);
+  --color-interactive-disabled: var(--color-neutral-700);
+
+  /* Borders */
+  --color-border-default:  var(--color-neutral-800);
+  --color-border-strong:   var(--color-neutral-600);
+  --color-border-focus:    var(--color-brand-400);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* Surfaces */
+    --color-surface-page:      var(--color-neutral-950);
+    --color-surface-card:      var(--color-neutral-900);
+    --color-surface-elevated:  var(--color-neutral-800);
+    --color-surface-inverse:   var(--color-neutral-50);
+
+    /* Content (Text & Icons) */
+    --color-content-primary:   var(--color-neutral-5);
+    --color-content-secondary: var(--color-neutral-400);
+    --color-content-disabled:  var(--color-neutral-600);
+    --color-content-inverse:   var(--color-neutral-900);
+    --color-content-link:      var(--color-brand-300);
+
+    /* Interactive Elements */
+    --color-interactive:          var(--color-brand-400);
+    --color-interactive-hover:    var(--color-brand-300);
+    --color-interactive-active:   var(--color-brand-200);
+    --color-interactive-disabled: var(--color-neutral-700);
+
+    /* Borders */
+    --color-border-default:  var(--color-neutral-800);
+    --color-border-strong:   var(--color-neutral-600);
+    --color-border-focus:    var(--color-brand-400);
+  }
+}

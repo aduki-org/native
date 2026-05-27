@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Native — Blog Demo</title>
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="index.css">
+
+  <!--
+    Dev import map — served by node server.js or @web/dev-server from project root.
+    In production, swap /src/ paths for the CDN dist importmap.json:
+    <script type="importmap" src="https://cdn.jsdelivr.net/npm/@aduki/native@0.1.0/dist/importmap.json"></script>
+  -->
+  <script type="importmap">
+    {
+      "imports": {
+        "@aduki/native":             "/src/index.js",
+        "@aduki/native/api":         "/src/core/api/index.js",
+        "@aduki/native/state":       "/src/core/state/index.js",
+        "@aduki/native/events":      "/src/core/events/index.js",
+        "@aduki/native/router":      "/src/core/router/index.js",
+        "@aduki/native/storage":     "/src/core/storage/index.js",
+        "@aduki/native/offline":     "/src/core/offline/index.js",
+        "@aduki/native/animations":  "/src/core/animations/index.js",
+        "@aduki/native/workers":     "/src/core/workers/index.js",
+        "@aduki/native/security":    "/src/core/security/index.js",
+        "@aduki/native/platform":    "/src/core/platform/supports.js",
+        "@aduki/native/ui":          "/src/core/ui/index.js",
+        "@aduki/native/elements":    "/src/elements/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Ambient Premium Glow Effects -->
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+
+  <div class="container">
+    <!-- Premium Glassmorphic Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-area">
+          <span class="logo-icon">✦</span>
+          <div>
+            <h1>Native</h1>
+            <p>Native-First Web Platform Architecture</p>
+          </div>
+        </div>
+        <div class="status-panel">
+          <!-- Live Network State Toggle Widget -->
+          <div class="network-toggle">
+            <span class="status-indicator online" id="status-indicator"></span>
+            <span class="status-text" id="status-text">Online Mode</span>
+            <button class="toggle-btn" id="network-toggle-btn">Go Offline</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout-grid">
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Tag Filter Navigation -->
+        <nav class="filters-nav">
+          <button class="filter-chip active" data-filter="all">All Stories</button>
+          <button class="filter-chip" data-filter="tech">Technology</button>
+          <button class="filter-chip" data-filter="design">Design</button>
+          <button class="filter-chip" data-filter="lifestyle">Lifestyle</button>
+        </nav>
+
+        <!-- Dynamic Blog Posts Stream -->
+        <section class="posts-stream" id="posts-stream">
+          <!-- Blog items will stagger-animate here on load -->
+        </section>
+      </main>
+
+      <!-- Sidebar Controls Area -->
+      <aside class="sidebar">
+        <!-- Glassmorphic Authoring Panel -->
+        <div class="control-panel">
+          <h3>Create New Story</h3>
+          <p class="panel-hint">Draft posts locally. Works completely offline via enqueued IndexedDB syncing!</p>
+          
+          <form id="post-form" class="blog-form">
+            <div class="form-group">
+              <label for="post-title">Story Title</label>
+              <input type="text" id="post-title" required placeholder="Catchy title...">
+            </div>
+            
+            <div class="form-group">
+              <label for="post-tag">Category Tag</label>
+              <select id="post-tag">
+                <option value="tech">Technology</option>
+                <option value="design">Design</option>
+                <option value="lifestyle">Lifestyle</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="post-content">Story Body</label>
+              <textarea id="post-content" required rows="5" placeholder="Write your story here..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">Publish Story</button>
+          </form>
+        </div>
+
+        <!-- Sync Queue Widget -->
+        <div class="control-panel queue-panel">
+          <div class="queue-header">
+            <h3>Offline Sync Queue</h3>
+            <span class="queue-badge" id="queue-badge">0 pending</span>
+          </div>
+          <p class="panel-hint">Queued operations waiting for active server connections to sync back online.</p>
+          <div class="queue-list" id="queue-list">
+            <div class="empty-queue">No pending sync tasks</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Bootstrapping Application Script -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+/**
+ * tokens/semantic/contrast.css
+ *
+ * WCAG AAA compliant high-contrast semantic token overrides.
+ * Enhances readability for visually impaired users.
+ * Source: doc 26 §3, library2.md §Phase 1-B
+ */
+
+[data-theme="high-contrast"] {
+  /* Surfaces */
+  --color-surface-page:      var(--color-neutral-0);
+  --color-surface-card:      var(--color-neutral-0);
+  --color-surface-elevated:  var(--color-neutral-0);
+  --color-surface-inverse:   var(--color-neutral-1000);
+
+  /* Content */
+  --color-content-primary:   var(--color-neutral-1000);
+  --color-content-secondary: var(--color-neutral-900);
+  --color-content-disabled:  var(--color-neutral-700);
+  --color-content-inverse:   var(--color-neutral-0);
+  --color-content-link:      var(--color-brand-900);
+
+  /* Interactive Elements */
+  --color-interactive:          var(--color-brand-900);
+  --color-interactive-hover:    var(--color-neutral-1000);
+  --color-interactive-active:   var(--color-neutral-1000);
+  --color-interactive-disabled: var(--color-neutral-600);
+
+  /* Borders */
+  --color-border-default:  var(--color-neutral-1000);
+  --color-border-strong:   var(--color-neutral-1000);
+  --color-border-focus:    var(--color-brand-900);
+}

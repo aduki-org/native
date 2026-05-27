@@ -1,0 +1,72 @@
+/**
+ * core/platform/guard.js
+ *
+ * Feature-gate wrapper and lazy polyfill loader.
+ * Ensures caller experiences uniform APIs regardless of native vs polyfill support.
+ * Source: doc 18 §12, library2.md §Phase 1-A
+ */
+
+import { supports } from './supports.js';
+
+export async function urlPattern() {
+  if (supports.urlPattern) {
+    return globalThis.URLPattern;
+  }
+  const { default: polyfill } = await import('./polyfills/urlpattern.js');
+  return polyfill;
+}
+
+export async function navigation() {
+  if (supports.navigationAPI) {
+    return globalThis.navigation;
+  }
+  await import('./polyfills/navigation.js');
+  return globalThis.navigation;
+}
+
+export async function popover() {
+  if (supports.popoverAPI) return;
+  await import('./polyfills/popover.js');
+}
+
+export async function shadow(root = document) {
+  if (supports.declarativeShadowDOM) return;
+  const { apply } = await import('./polyfills/shadow.js');
+  apply(root);
+}
+
+export async function anchor(floating, anchorEl, options = {}) {
+  if (supports.anchorPositioning) {
+    // Native CSS Anchor positioning handles this; no script action needed.
+    return;
+  }
+  const { position } = await import('./polyfills/anchor.js');
+  position(floating, anchorEl, options);
+}
+
+export async function sanitizer() {
+  if (supports.sanitizerAPI) {
+    return new globalThis.Sanitizer();
+  }
+  // Lightweight DOMPurify / Sanitizer standard fallback
+  return {
+    sanitizeToString(input) {
+      if (typeof DOMPurify !== 'undefined') {
+        return DOMPurify.sanitize(input);
+      }
+      // Fail-safe simple string sanitizer
+      const temp = document.createElement('div');
+      temp.textContent = input;
+      return temp.innerHTML;
+    }
+  };
+}
+
+export default {
+  urlPattern,
+  navigation,
+  popover,
+  shadow,
+  anchor,
+  sanitizer
+};

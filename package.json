@@ -1,0 +1,55 @@
+{
+  "name": "@aduki/native",
+  "version": "0.1.0",
+  "description": "Native-first web platform library — reactive state, networking, offline, animations, custom elements. Zero build step. Pure browser ESM.",
+  "author": "fescii",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/aduki-org/native#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aduki-org/native.git"
+  },
+  "keywords": [
+    "native",
+    "esm",
+    "web-components",
+    "reactive",
+    "offline",
+    "animations",
+    "no-build",
+    "shadow-dom"
+  ],
+  "files": [
+    "src/",
+    "importmap.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".":             "./src/index.js",
+    "./api":         "./src/core/api/index.js",
+    "./state":       "./src/core/state/index.js",
+    "./events":      "./src/core/events/index.js",
+    "./router":      "./src/core/router/index.js",
+    "./storage":     "./src/core/storage/index.js",
+    "./offline":     "./src/core/offline/index.js",
+    "./animations":  "./src/core/animations/index.js",
+    "./workers":     "./src/core/workers/index.js",
+    "./security":    "./src/core/security/index.js",
+    "./platform":    "./src/core/platform/supports.js",
+    "./ui":          "./src/core/ui/index.js",
+    "./elements":    "./src/elements/index.js"
+  },
+  "scripts": {
+    "start":     "node server.js",
+    "build":     "node scripts/esbuild.mjs",
+    "build:bun": "bun scripts/bun.js",
+    "test":      "npx @web/test-runner",
+    "serve":     "npx @web/dev-server --port 8080 --node-resolve false"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
