@@ -67,3 +67,5 @@ advisory-db/
 .junie
 plans_refs/
 plans_refs/*
+all.text
+all.rust
