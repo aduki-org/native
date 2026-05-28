@@ -20,26 +20,35 @@ pub fn build(src_dir: &Path, dist_dir: &Path) {
 }
 
 pub fn run(src_dir: &Path, dist_types_dir: &Path) {
-    let mut specs = Vec::new();
-
-    // 1. Walk through src/elements/ and src/pages/ to parse JS files
-    for entry in WalkDir::new(src_dir)
+    // Collect all paths to parallelize with Rayon (T-01)
+    let paths: Vec<_> = WalkDir::new(src_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
-    {
-        let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "js") {
-            if let Some(spec) = parse_element_file(path) {
-                specs.push((path.to_path_buf(), spec));
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    let cm = Arc::new(SourceMap::default());
+
+    use rayon::prelude::*;
+
+    // Parallel walk & parse
+    let specs: Vec<(std::path::PathBuf, ExtractedSpec)> = paths
+        .par_iter()
+        .filter_map(|path| {
+            if path.extension().map_or(false, |ext| ext == "js") {
+                parse_element_file(path, &cm).map(|spec| (path.clone(), spec))
+            } else if path.extension().map_or(false, |ext| ext == "html") {
+                logs::compiler!("Found HTML: {:?}", path);
+                if let Err(err) = super::html::parse_and_emit(path) {
+                    logs::error!("Failed to generate tags descriptor for {:?}: {}", path, err);
+                }
+                None
+            } else {
+                None
             }
-        } else if path.extension().map_or(false, |ext| ext == "html") {
-            logs::compiler!("Found HTML: {:?}", path);
-            if let Err(err) = super::html::parse_and_emit(path) {
-                logs::error!("Failed to generate tags descriptor for {:?}: {}", path, err);
-            }
-        }
-    }
+        })
+        .collect();
 
     // 2. Write individual .d.ts files and the main index.d.ts
     std::fs::create_dir_all(dist_types_dir).ok();
@@ -77,8 +86,7 @@ pub fn run(src_dir: &Path, dist_types_dir: &Path) {
     logs::success!("Type augmentation registry updated inside dist/types/index.d.ts");
 }
 
-fn parse_element_file(file_path: &Path) -> Option<ExtractedSpec> {
-    let cm: Arc<SourceMap> = Arc::new(SourceMap::default());
+fn parse_element_file(file_path: &Path, cm: &Arc<SourceMap>) -> Option<ExtractedSpec> {
     let fm = match cm.load_file(file_path) {
         Ok(f) => f,
         Err(_) => return None,
@@ -292,6 +300,8 @@ fn to_pascal_case(s: &str) -> String {
 /// Simple directory copy to mirror src to dist (build mode only)
 fn sync_src_to_dist(src: &Path, dist: &Path) {
     std::fs::create_dir_all(dist).ok();
+    
+    // T-06: Conditional asset mirroring synchronization to avoid dirtying dev-server rebuilds
     for entry in walkdir::WalkDir::new(src)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -303,10 +313,23 @@ fn sync_src_to_dist(src: &Path, dist: &Path) {
         if path.is_dir() {
             std::fs::create_dir_all(&target).ok();
         } else {
-            if let Some(parent) = target.parent() {
-                std::fs::create_dir_all(parent).ok();
+            // Check if destination exists and has matching or newer modification time
+            let needs_copy = match (std::fs::metadata(path), std::fs::metadata(&target)) {
+                (Ok(src_meta), Ok(dst_meta)) => {
+                    match (src_meta.modified(), dst_meta.modified()) {
+                        (Ok(src_time), Ok(dst_time)) => src_time > dst_time,
+                        _ => true,
+                    }
+                }
+                _ => true,
+            };
+
+            if needs_copy {
+                if let Some(parent) = target.parent() {
+                    std::fs::create_dir_all(parent).ok();
+                }
+                std::fs::copy(path, &target).ok();
             }
-            std::fs::copy(path, &target).ok();
         }
     }
 }

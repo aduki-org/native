@@ -23,8 +23,9 @@ export const transitions = {
         sourceElement.style.viewTransitionName = name;
       }
 
-      const transition = document.startViewTransition(async () => {
-        await updateDOM();
+      const transition = document.startViewTransition(() => {
+        const res = updateDOM();
+        if (res instanceof Promise) return res;
       });
 
       if (hasSource) {
@@ -42,7 +43,8 @@ export const transitions = {
       }
     } else {
       // Graceful fallback for non-supporting browsers (e.g. Safari < 18, Firefox < 133)
-      await updateDOM();
+      const res = updateDOM();
+      if (res instanceof Promise) await res;
     }
   }
 };

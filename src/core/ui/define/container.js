@@ -57,7 +57,7 @@ export function container(tag, spec, base = import.meta.url) {
       if (typeof this.startViewTransition === 'function') {
         try {
           const vt = this.startViewTransition({ callback: doSwap });
-          await vt.finished;
+          await vt.ready;
         } catch (err) {
           if (err?.name !== 'AbortError') console.warn('[UI Container] Scoped VT aborted:', err);
         }
@@ -68,7 +68,7 @@ export function container(tag, spec, base = import.meta.url) {
       if (typeof document.startViewTransition === 'function') {
         try {
           const vt = document.startViewTransition(doSwap);
-          await vt.finished;
+          await vt.ready;
         } catch (err) {
           if (err?.name !== 'AbortError') console.warn('[UI Container] Document VT aborted:', err);
         }

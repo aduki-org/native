@@ -32,13 +32,22 @@ function ensureObserver() {
 
   requestIdleCallback(() => {
     observer = new MutationObserver(() => {
+      let activeObservationNeeded = false;
       for (const selector of observedSelectors) {
         if (!containerNodeMap.get(selector)?.deref()) {
           const el = document.querySelector(selector);
           if (el) {
             registerContainer(selector, el);
+          } else {
+            activeObservationNeeded = true;
           }
         }
+      }
+
+      // RT-06: Automatically disconnect MutationObserver if all observed selectors are resolved
+      if (!activeObservationNeeded && observer) {
+        observer.disconnect();
+        observer = null;
       }
     });
 
@@ -89,11 +98,11 @@ export function getContainer(name) {
         // Auto-register standard DOM elements found via selector
         registerContainer(name, el);
       } else {
-        // If not found, track the selector for future passive observation
+        // Track the selector and ensure MutationObserver is active (RT-06)
         if (!observedSelectors.has(name)) {
           observedSelectors.add(name);
-          ensureObserver();
         }
+        ensureObserver();
       }
     } catch (err) {
       // Invalid selector string, ignore.

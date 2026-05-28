@@ -191,24 +191,18 @@ export class TagsCache {
 export function createRefs(shadowRoot, descriptor) {
   const refs = Object.create(null);
   const names = Array.isArray(descriptor?.refs) ? descriptor.refs : null;
+  const nameSet = names ? new Set(names) : null;
 
-  if (names?.length) {
-    for (const name of names) {
-      const found = Array.from(shadowRoot.querySelectorAll(`[ref="${escapeAttrValue(name)}"]`));
-      if (found[0]) refs[name] = found[0];
-      if (found.length > 1) {
-        warn(`[Native UI] Duplicate ref "${name}" found. Using the first match.`);
-      }
-    }
-  } else {
-    for (const node of shadowRoot.querySelectorAll('[ref]')) {
-      const name = node.getAttribute('ref');
-      if (!name) continue;
-      if (refs[name]) {
-        warn(`[Native UI] Duplicate ref "${name}" found. Using the first match.`);
-      } else {
-        refs[name] = node;
-      }
+  const all = shadowRoot.querySelectorAll('[ref]');
+  for (const node of all) {
+    const name = node.getAttribute('ref');
+    if (!name) continue;
+    if (nameSet && !nameSet.has(name)) continue;
+
+    if (refs[name]) {
+      warn(`[Native UI] Duplicate ref "${name}" found. Using the first match.`);
+    } else {
+      refs[name] = node;
     }
   }
 
@@ -226,48 +220,12 @@ export function prewarmTags(tags, refs, descriptor) {
 }
 
 export function installInvalidationHooks(shadowRoot, tags) {
-  let hooks = rootHooks.get(shadowRoot);
-  if (!hooks) {
-    hooks = {
-      caches: new Set(),
-      replaceChildren: shadowRoot.replaceChildren.bind(shadowRoot)
-    };
-
-    shadowRoot.replaceChildren = (...nodes) => {
-      for (const cache of hooks.caches) cache.clear();
-      return hooks.replaceChildren(...nodes);
-    };
-
-    const descriptor = getShadowInnerHTMLDescriptor(shadowRoot);
-    if (descriptor?.get && descriptor?.set && descriptor.configurable !== false) {
-      Object.defineProperty(shadowRoot, 'innerHTML', {
-        configurable: true,
-        enumerable: descriptor.enumerable,
-        get() {
-          return descriptor.get.call(this);
-        },
-        set(value) {
-          for (const cache of hooks.caches) cache.clear();
-          descriptor.set.call(this, value);
-        }
-      });
-    }
-
-    rootHooks.set(shadowRoot, hooks);
-  }
-
-  hooks.caches.add(tags);
-  return () => hooks.caches.delete(tags);
-}
-
-function getShadowInnerHTMLDescriptor(shadowRoot) {
-  let proto = Object.getPrototypeOf(shadowRoot);
-  while (proto) {
-    const descriptor = Object.getOwnPropertyDescriptor(proto, 'innerHTML');
-    if (descriptor) return descriptor;
-    proto = Object.getPrototypeOf(proto);
-  }
-  return null;
+  // Use a simple, native MutationObserver to clear tags cache when children change (R-07)
+  const observer = new MutationObserver(() => {
+    tags.clear();
+  });
+  observer.observe(shadowRoot, { childList: true, subtree: false });
+  return () => observer.disconnect();
 }
 
 /**
@@ -283,9 +241,26 @@ export function createEventDelegator(shadowRoot, defaultSignal) {
     return `${String(eventType)}:${capture ? 'capture' : 'bubble'}`;
   }
 
+  function isPassiveRequired(key) {
+    const registry = registries.get(key);
+    if (!registry || registry.size === 0) return true;
+    for (const reg of registry.values()) {
+      if (reg.passive === false) return false;
+    }
+    return true;
+  }
+
   function ensureListener(eventType, capture) {
     const key = listenerKey(eventType, capture);
-    if (listeners.has(key)) return;
+    const currentPassive = isPassiveRequired(key);
+    
+    // Check if we already have a registered listener with the exact same passive configuration (R-02)
+    const active = listeners.get(key);
+    if (active) {
+      if (active.passive === currentPassive) return;
+      shadowRoot.removeEventListener(eventType, active.handler, { capture });
+      listeners.delete(key);
+    }
 
     const rootListener = (event) => {
       if (defaultSignal?.aborted) return;
@@ -312,9 +287,9 @@ export function createEventDelegator(shadowRoot, defaultSignal) {
     shadowRoot.addEventListener(eventType, rootListener, {
       signal: defaultSignal,
       capture,
-      passive: false
+      passive: currentPassive
     });
-    listeners.set(key, rootListener);
+    listeners.set(key, { handler: rootListener, passive: currentPassive });
   }
 
   function remove(key, id) {
@@ -335,7 +310,9 @@ export function createEventDelegator(shadowRoot, defaultSignal) {
 
     if (signal?.aborted) return () => {};
 
-    ensureListener(eventType, capture);
+    // Default to true (passive: true) unless options.passive is explicitly false (R-02)
+    const passive = options.passive !== false;
+
     if (!registries.has(key)) registries.set(key, new Map());
 
     registries.get(key).set(id, {
@@ -343,10 +320,16 @@ export function createEventDelegator(shadowRoot, defaultSignal) {
       selector,
       handler,
       signal,
-      once: once || Boolean(options.once)
+      once: once || Boolean(options.once),
+      passive
     });
 
-    const dispose = () => remove(key, id);
+    ensureListener(eventType, capture);
+
+    const dispose = () => {
+      remove(key, id);
+      ensureListener(eventType, capture);
+    };
     signal?.addEventListener('abort', dispose, { once: true });
     return dispose;
   }
@@ -460,20 +443,49 @@ export function createMutationWatcher(shadowRoot, defaultSignal) {
     if (!registry.size || defaultSignal?.aborted) return;
 
     observer ||= new MutationObserver(dispatch);
-    observer.observe(shadowRoot, computeWatchOptions());
+    
+    // R-04: Only watch shadow root subtree if selector targets are specified.
+    // If target is direct element references, we observe them directly with subtree: false
+    let needsSubtree = false;
+    for (const reg of registry.values()) {
+      if (reg.selector) {
+        needsSubtree = true;
+        break;
+      }
+    }
+
+    const options = computeWatchOptions(needsSubtree);
+
+    if (needsSubtree) {
+      observer.observe(shadowRoot, options);
+    } else {
+      const seen = new Set();
+      for (const reg of registry.values()) {
+        for (const target of reg.targets) {
+          if (!seen.has(target)) {
+            seen.add(target);
+            observer.observe(target, options);
+          }
+        }
+      }
+    }
   }
 
-  function computeWatchOptions() {
+  function computeWatchOptions(needsSubtree) {
     let hasAttr = false;
     let hasAllAttrs = false;
     let hasKids = false;
     let hasText = false;
     let hasTree = false;
+    let hasDeepKids = false;
     const attrs = new Set();
 
     for (const reg of registry.values()) {
       if (reg.kind === 'tree') hasTree = true;
-      if (reg.kind === 'kids') hasKids = true;
+      if (reg.kind === 'kids') {
+        hasKids = true;
+        if (reg.deep) hasDeepKids = true;
+      }
       if (reg.kind === 'text') hasText = true;
       if (reg.kind === 'attr') {
         hasAttr = true;
@@ -492,7 +504,7 @@ export function createMutationWatcher(shadowRoot, defaultSignal) {
       childList: hasKids || hasTree,
       characterData: hasText || hasTree,
       characterDataOldValue: hasText || hasTree,
-      subtree: true
+      subtree: needsSubtree || hasTree || hasDeepKids
     };
 
     if (shouldObserveAttrs && !hasTree && !hasAllAttrs && attrs.size > 0) {

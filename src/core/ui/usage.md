@@ -439,7 +439,41 @@ Rules:
 - Avoid `innerHTML` for dynamic content.
 - Dispatch outward with `new CustomEvent(type, { bubbles: true, composed: true, detail })`.
 
-## 16. Checklist
+---
+
+## 16. Performance & Memory Optimizations
+
+The `@adukiorg/native` runtime contains advanced optimizations to achieve near-zero visual overhead:
+
+### 16.1. Single-Allocation Symbol Backing Store
+Rather than invoking expensive `getAttribute` queries or mapping string properties dynamically, the component runtime caches reflected attributes exactly once using internal `Symbol`-keyed backing fields on the prototype during construction. This prevents layout invalidation flushes when reading or writing component properties.
+
+### 16.2. Visual vs. Non-Visual State Microtask Batching
+Properties are batched dynamically before rendering:
+- **Non-Visual / ARIA States**: Attributes like `aria-expanded` and custom non-visual properties are scheduled using `queueMicrotask` to instantly apply updates without waiting for the next 16.7ms animation frame tick.
+- **Visual Changes**: Traditional visual layout changes continue to use `requestAnimationFrame` for stutter-free paints.
+
+### 16.3. Constructable Stylesheet HMR Memory Leak Protection
+Constructable CSS hot swaps use a centralized global map of active HMR style listeners instead of binding listeners to individual elements. This prevents stylesheet memory leaks during iterative saves.
+
+### 16.4. Synchronous Connection Check (First Paint)
+In `connectedCallback`, the element checks if its HTML template/CSS styles are already cached or inlined. If so, it mounts and paints **synchronously** to avoid microtask delays, resulting in instantaneous first paints.
+
+### 16.5. Scroll-Blocking Passive Delegator
+Delegated event listeners created with `on` are registered with `passive: true` by default. The delegator automatically upgrades the listener to `passive: false` only if the event explicitly calls `preventDefault()`, guaranteeing smooth browser scrolling.
+
+### 16.6. Target-Specific MutationObservers & Scopes
+Scoped MutationObservers created with `watch` are bound to target elements with `{ subtree: false }` unless deep structural queries are explicitly requested, minimizing browser tree traversal overhead.
+
+### 16.7. Non-Disruptive Cache Invalidation
+Instead of overriding `replaceChildren` and `innerHTML` via prototype monkey-patching, `TagsCache` dynamically registers a lightweight childList MutationObserver on the shadowRoot to cleanly invalidate query caches when child nodes change.
+
+### 16.8. Single-Pass Ref Extraction
+Dynamic ref extraction falls back to a single-pass `querySelectorAll('[ref]')` selection, reducing tree lookup complexity from $O(\text{refs} \times \text{DOM Size})$ to $O(\text{DOM Size})$.
+
+---
+
+## 17. Checklist
 
 - Use `ui.element` for components and pages.
 - Use `ui.container` only for router-owned layout slots.

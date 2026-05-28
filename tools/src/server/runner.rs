@@ -68,7 +68,7 @@ async fn hmr_handler(
         }
     });
 
-    Sse::new(stream).keep_alive(KeepAlive::new().interval(Duration::from_secs(15)))
+    Sse::new(stream).keep_alive(KeepAlive::new().interval(Duration::from_secs(30)))
 }
 
 /// Automatically serves served HTML files, injecting the HMR live reload client script

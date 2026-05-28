@@ -93,9 +93,9 @@ unmount({ el, tags, refs, internals }) {}
 
 Implementation rule: build this context once per connected lifecycle and reuse the same helper instances for mount and every scheduled update during that connection.
 
-## 5. Primitive JavaScript Runtime Plan
+## 5. Primitive JavaScript Runtime Plan & Optimizations
 
-### 5.1 Context Builder
+### 5.1 Context Builder & Runtime Core Optimizations
 
 Create a small internal helper in `src/core/ui/define/proxy.js` or a new `context.js`:
 
@@ -113,9 +113,17 @@ export function createComponentContext({ el, shadowRoot, ctrl, descriptor, inter
 }
 ```
 
-Why: `element.js` currently constructs each helper inline. A context builder keeps lifecycle setup auditable and makes it harder for `mount` and `update` to drift.
+#### Core Runtime Performance Optimizations:
+1. **Single-Allocation Symbol Backing Store**: Component attributes and values are cached in local `Symbol` properties bound to the element prototype at instantiation. This guarantees $O(1)$ property access and prevents repetitive layout invalidations from reading native attributes.
+2. **Visual vs. Non-Visual State Microtask Batching**: ARIA attributes and custom non-visual properties are scheduled using `queueMicrotask` to instantly execute without animation frame delay. Visual mutations continue using `requestAnimationFrame` for stutter-free frame-synced drawing.
+3. **Constructable Stylesheet HMR Memory Leak Protection**: Standard styles hot-swapping is handled via a global cache map `hmrStyleListeners` on the runtime, instead of attaching style listeners on individual custom elements. This stops active stylesheets from accumulating memory leak records across hot reloads.
+4. **Synchronous Connected Lifecycle Connection Check**: If standard custom element templates or stylesheets are already in memory, the connection lifecycle executes connection hooks synchronously to avoid microtask paint delays and enable instantaneous first paint.
+5. **Scroll-Blocking Passive Delegator**: The `on` event delegator registers shadow-root events with `passive: true` by default. It upgrades listeners to `passive: false` only if the registered event specifically overrides browser defaults via `preventDefault()`, maximizing touch and scroll responsiveness.
+6. **Target-Specific MutationObservers**: Low-level observers bind directly to target elements with `{ subtree: false }` unless tree traversal watches are specifically requested.
+7. **Cache Invalidation MutationObserver**: A dedicated `childList` MutationObserver is placed on the shadowRoot to safely flush tags selector maps and refs lists whenever DOM elements are mutated, replacing slow prototype monkey-patching of `innerHTML` or `replaceChildren`.
+8. **Single-Pass Ref fallback**: Descriptor fallback extraction utilizes a single `querySelectorAll('[ref]')` query to compile anchors in one pass, avoiding multiple traversal runs.
 
-### 5.2 `refs`
+### 5.2 Context Helper Mapping
 
 Target behavior:
 

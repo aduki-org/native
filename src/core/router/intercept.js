@@ -47,7 +47,7 @@ export function on(type, callback, signal) {
  */
 export function emit(type, detail) {
   if (!listeners[type]) return;
-  for (const callback of listeners[type]) {
+  for (const callback of Array.from(listeners[type])) {
     try {
       callback(detail);
     } catch (err) {
@@ -85,6 +85,7 @@ export function setup() {
     }
 
     const url = event.destination.url;
+    let precommitted = false; // Scoped precommitted guard state (RT-02)
 
     event.intercept({
       /**
@@ -92,6 +93,7 @@ export function setup() {
        * Supports atomic redirection before URL commit (Chrome & Firefox).
        */
       async precommitHandler(controller) {
+        precommitted = true;
         const destination = event.destination;
         for (const guardFn of guards) {
           const redirectUrl = await guardFn(destination, controller);
@@ -119,11 +121,13 @@ export function setup() {
 
         // Graceful Safari Fallback: Evaluate guards inside post-commit handler if precommit is ignored.
         // If a guard fails here, we use location replace to correct the URL.
-        for (const guardFn of guards) {
-          const redirectUrl = await guardFn(destination, null);
-          if (redirectUrl) {
-            window.navigation.navigate(redirectUrl, { history: 'replace' });
-            return;
+        if (!precommitted) {
+          for (const guardFn of guards) {
+            const redirectUrl = await guardFn(destination, null);
+            if (redirectUrl) {
+              window.navigation.navigate(redirectUrl, { history: 'replace' });
+              return;
+            }
           }
         }
 
@@ -215,31 +219,40 @@ class TransitionController {
       error: []
     };
 
-    this.promise
-      .then(async () => {
-        const routeMatch = await match(this.url);
-        if (routeMatch) {
-          // Check layout resolution guard for fluent transition correctly
-          if (routeMatch.route.meta && routeMatch.route.meta.container) {
-            const { getContainer } = await import('./container.js');
-            if (!getContainer(routeMatch.route.meta.container)) {
-              this._dispatch('error', new Error(`RouteError: Required layout container '${routeMatch.route.meta.container}' is not active in the DOM.`));
-              return;
-            }
-          }
+    const getPath = (u) => {
+      try { return new URL(u, window.location.href).pathname; } catch (_) { return u; }
+    };
 
-          this._dispatch('found', {
-            tag: routeMatch.tag,
-            params: routeMatch.params,
-            url: this.url
-          });
-        } else {
-          this._dispatch('notfound', { url: this.url });
-        }
-      })
-      .catch((err) => {
-        this._dispatch('error', err);
-      });
+    // Coordinate with Navigation events using standard on() mechanism (RT-01)
+    const disposeFound = on('found', (detail) => {
+      if (getPath(detail.url) === getPath(this.url)) {
+        cleanup();
+        this._dispatch('found', detail);
+      }
+    });
+
+    const disposeNotFound = on('notfound', (detail) => {
+      if (getPath(detail.url) === getPath(this.url)) {
+        cleanup();
+        this._dispatch('notfound', detail);
+      }
+    });
+
+    const disposeError = on('error', (detail) => {
+      cleanup();
+      this._dispatch('error', detail.error);
+    });
+
+    const cleanup = () => {
+      disposeFound();
+      disposeNotFound();
+      disposeError();
+    };
+
+    this.promise.catch((err) => {
+      cleanup();
+      this._dispatch('error', err);
+    });
   }
 
   on(event, callback) {
@@ -260,10 +273,21 @@ class TransitionController {
   }
 }
 
+let navigateCallback = null;
+
+export function registerNavigator(cb) {
+  navigateCallback = cb;
+}
+
 export const nav = {
   to(url, options) {
-    // Dynamic import to avoid circular dependency since history imports intercept and vice versa
-    return new TransitionController(url, import('./history.js').then(m => m.navigate(url, options)));
+    if (!navigateCallback) {
+      console.warn('[Router] Navigator is not registered yet. Falling back to dynamic import.');
+      return new TransitionController(url, import('./history.js').then(m => m.navigate(url, options)));
+    }
+    const result = navigateCallback(url, options);
+    const p = result instanceof Promise ? result : Promise.resolve(result);
+    return new TransitionController(url, p);
   }
 };
 

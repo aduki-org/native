@@ -16,6 +16,12 @@ const cache = new WeakMap();
  * Keyed by strings array reference for single-parse, clone-many performance (10x faster).
  */
 export function template(strings, ...values) {
+  const isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') || 
+                (typeof import.meta !== 'undefined' && import.meta.env?.DEV);
+  if (isDev && values.length > 0) {
+    console.warn('[ui.template] Interpolated values are ignored. Use refs for dynamic binding.');
+  }
+
   let t = cache.get(strings);
 
   if (!t) {

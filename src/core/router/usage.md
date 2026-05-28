@@ -1,6 +1,6 @@
 # Programmatic Client-Side Routing: Complete Developer Guide
 
-The `@aduki/native` client-side router is a **pure JavaScript logic interface** for modern browser navigation. It offers two beautiful paradigms: **Declarative Route-Coupling** (zero boilerplate auto-mounting) and a **Fluent Transition Controller** (fine-grained programmatic chains).
+The `@adukiorg/native` client-side router is a **pure JavaScript logic interface** for modern browser navigation. It offers two beautiful paradigms: **Declarative Route-Coupling** (zero boilerplate auto-mounting) and a **Fluent Transition Controller** (fine-grained programmatic chains).
 
 ---
 
@@ -121,3 +121,43 @@ router.registerConnection('/rooms/:roomId', async (url) => {
 ```
 
 When a user navigates from `/rooms/42` to `/settings`, the router automatically invokes `close()` on the active coordinated connection pool and cleans up all unneeded network sockets.
+
+---
+
+## 6. Performance, Correctness & Architectural Optimizations
+
+The routing engine has been heavily optimized for maximum execution efficiency, low latency, and deterministic behavior:
+
+### 6.1. Deterministic Route Specificity Sorting
+When routes are registered via `router.register()`, they are automatically sorted based on structural specificity:
+1. **Static Paths**: Absolute exact matches (e.g., `/settings/profile`) are evaluated first.
+2. **Parameterized Paths**: Dynamic paths with parameters (e.g., `/users/:id`) are evaluated second.
+3. **Wildcards / Catch-Alls**: Paths with wildcards (e.g., `*` or `/(.*)`) are evaluated last.
+Within each category, paths are additionally sorted by **length (longest pathname first)** to ensure nested paths match before parent paths, making route matching completely deterministic.
+
+### 6.2. Synchronous URLPattern Match Path
+The router pre-resolves the native `URLPattern` class on module load, avoiding dynamic async microtask polyfill checks during routing. Route matching is synchronously executed on the hot path for modern browsers to eliminate frame latency.
+
+### 6.3. Async Custom Element Hydration Gate
+During declarative route resolution, the global router orchestrator implements an async custom element hydration gate. Before mounting, it checks if the tag is a custom element (by verifying the presence of a hyphen `-`) and awaits its definition:
+```javascript
+if (typeof customElements !== 'undefined' && tag.includes('-') && !customElements.get(tag)) {
+  await customElements.whenDefined(tag);
+}
+```
+This protects standard HTML nodes from throwing errors and prevents instantiation of un-hydrated `HTMLUnknownElement` elements.
+
+### 6.4. Absolute & Relative Pathname Normalization
+The `TransitionController` handles absolute and relative URLs transparently. It maps URL strings to their resolved pathnames internally using the `window.location.origin` fallback to prevent comparison mismatches:
+```javascript
+const getPath = (u) => {
+  try { return new URL(u, window.location.href).pathname; } catch (_) { return u; }
+};
+```
+This prevents programmatic `nav.to()` callbacks from timing out due to absolute/relative string mismatches.
+
+### 6.5. Circular Dependency & Dynamic Import Prevention
+`nav.to` registers its execution callbacks via a static, module-level registration mechanism. This avoids runtime circular dependencies and eliminates dynamic dynamic `import()` overhead during programmatic transitions.
+
+### 6.6. Infinite Cross-Tab Sync Loop Guard
+To prevent dynamic routing sync loops, tab synchronization utilizes a lightweight `sent` cycle-check guard, discarding duplicate sync events when a same-url navigation has already been processed.

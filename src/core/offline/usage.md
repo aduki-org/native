@@ -1,6 +1,6 @@
 # Offline & Background Capabilities Usage Guide
 
-This guide details the APIs, best practices, and integration strategies for the offline-first capabilities under `core.offline` and the Service Worker runtime within the `@aduki/native` library.
+This guide details the APIs, best practices, and integration strategies for the offline-first capabilities under `core.offline` and the Service Worker runtime within the `@adukiorg/native` library.
 
 ---
 

@@ -1,7 +1,6 @@
 // tools/src/watcher/runner.rs
 
 use std::path::{Path, PathBuf};
-use std::sync::mpsc::{channel, Receiver};
 use std::time::{Duration, Instant};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use tokio::sync::broadcast;
@@ -10,7 +9,9 @@ use crate::types::{ChangeKind, HmrMessage};
 
 /// Starts the file system directory watcher and starts polling changes concurrently
 pub fn start(src_path: PathBuf, types_path: PathBuf, tx: broadcast::Sender<HmrMessage>) {
-    let watcher = match SystemWatcher::new(&src_path) {
+    let (event_tx, mut event_rx) = tokio::sync::mpsc::unbounded_channel();
+
+    let watcher = match SystemWatcher::new(&src_path, event_tx) {
         Ok(w) => w,
         Err(err) => {
             logs::error!("Failed to initialize file watcher: {:?}", err);
@@ -21,8 +22,43 @@ pub fn start(src_path: PathBuf, types_path: PathBuf, tx: broadcast::Sender<HmrMe
     logs::watcher!("Watching for changes in '{}' folder...", src_path.display());
 
     tokio::spawn(async move {
+        let debounce_duration = Duration::from_millis(150);
+        
         loop {
-            let messages = watcher.poll_events();
+            // T-03: Await first filesystem event asynchronously without blocking tokio thread
+            let first_event = match event_rx.recv().await {
+                Some(Ok(evt)) => evt,
+                _ => continue,
+            };
+
+            let mut events = vec![first_event];
+            let mut last_activity = Instant::now();
+
+            // Non-blocking peek/receive for quick successive saves within the debounce window
+            while last_activity.elapsed() < debounce_duration {
+                tokio::select! {
+                    res = event_rx.recv() => {
+                        if let Some(Ok(evt)) = res {
+                            events.push(evt);
+                            last_activity = Instant::now();
+                        }
+                    }
+                    _ = tokio::time::sleep(Duration::from_millis(20)) => {}
+                }
+            }
+
+            let mut messages = Vec::new();
+            for event in events {
+                for path in event.paths {
+                    if let Some(msg) = watcher.classify_path(&path) {
+                        // Prevent duplicate messages in the same batch
+                        if !messages.iter().any(|m: &HmrMessage| m.path == msg.path && m.kind == msg.kind) {
+                            messages.push(msg);
+                        }
+                    }
+                }
+            }
+
             for msg in messages {
                 logs::watcher!("Event: {:?} -> {}", msg.kind, msg.path);
                 
@@ -49,21 +85,20 @@ pub fn start(src_path: PathBuf, types_path: PathBuf, tx: broadcast::Sender<HmrMe
                 // Broadcast Event to Axum Connections
                 let _ = tx.send(msg);
             }
-            tokio::time::sleep(Duration::from_millis(50)).await;
         }
     });
 }
 
 pub struct SystemWatcher {
     _watcher: RecommendedWatcher,
-    rx: Receiver<notify::Result<notify::Event>>,
     src_path: PathBuf,
 }
 
 impl SystemWatcher {
-    pub fn new(src_path: &Path) -> Result<Self, notify::Error> {
-        let (tx, rx) = channel();
-        
+    pub fn new(
+        src_path: &Path,
+        tx: tokio::sync::mpsc::UnboundedSender<notify::Result<notify::Event>>,
+    ) -> Result<Self, notify::Error> {
         let mut watcher = RecommendedWatcher::new(
             move |res| {
                 let _ = tx.send(res);
@@ -75,42 +110,8 @@ impl SystemWatcher {
 
         Ok(Self {
             _watcher: watcher,
-            rx,
             src_path: src_path.to_path_buf(),
         })
-    }
-
-    /// Read incoming events, debouncing multiple quick changes
-    pub fn poll_events(&self) -> Vec<HmrMessage> {
-        let mut events = Vec::new();
-        let debounce_duration = Duration::from_millis(150);
-
-        // Block and read the first event (if any), then non-block read remaining debounced events
-        if let Ok(Ok(event)) = self.rx.recv_timeout(Duration::from_millis(50)) {
-            events.push(event);
-            let mut last_activity = Instant::now();
-
-            while last_activity.elapsed() < debounce_duration {
-                if let Ok(Ok(evt)) = self.rx.recv_timeout(Duration::from_millis(20)) {
-                    events.push(evt);
-                    last_activity = Instant::now();
-                }
-            }
-        }
-
-        let mut messages = Vec::new();
-        for event in events {
-            for path in event.paths {
-                if let Some(msg) = self.classify_path(&path) {
-                    // Prevent duplicate messages in the same batch
-                    if !messages.iter().any(|m: &HmrMessage| m.path == msg.path && m.kind == msg.kind) {
-                        messages.push(msg);
-                    }
-                }
-            }
-        }
-
-        messages
     }
 
     fn classify_path(&self, path: &Path) -> Option<HmrMessage> {

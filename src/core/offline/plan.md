@@ -1,6 +1,6 @@
 # Offline & Background Capabilities Architecture Plan
 
-This document outlines the design, implementation, and optimization specifications for the resilient Offline and Background Capabilities engine under `core.offline` and the Service Worker runtime in the `@aduki/native` library.
+This document outlines the design, implementation, and optimization specifications for the resilient Offline and Background Capabilities engine under `core.offline` and the Service Worker runtime in the `@adukiorg/native` library.
 
 ---
 

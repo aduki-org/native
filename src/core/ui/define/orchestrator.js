@@ -1,13 +1,21 @@
 import { router } from '../../router/index.js';
 import { specRegistry } from './state.js';
 
+let dispose = null; // One-word module-level disposer variable (RT-11)
+
 /**
  * Initializes the global routing orchestrator.
  * Listens for navigation found events and dynamically updates layout containers.
  */
 export function initOrchestrator() {
   if (typeof window !== 'undefined') {
-    router.on('found', async ({ tag, params, direction }) => {
+    dispose?.();
+    dispose = router.on('found', async ({ tag, params, direction }) => {
+      // RT-13: Async hydration gate — await custom element definition before mounting
+      if (typeof customElements !== 'undefined' && tag.includes('-') && !customElements.get(tag)) {
+        await customElements.whenDefined(tag);
+      }
+
       const spec = specRegistry.get(tag.toLowerCase());
       if (!spec || !spec.container) return;
 
@@ -43,4 +51,9 @@ export function initOrchestrator() {
       }
     });
   }
+}
+
+export function destroyOrchestrator() {
+  dispose?.();
+  dispose = null;
 }

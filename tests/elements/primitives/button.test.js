@@ -14,8 +14,12 @@ describe('<ui-button> Custom Element', () => {
   beforeEach(async () => {
     btn = document.createElement('ui-button');
     document.body.appendChild(btn);
-    // Await async resources preloading and connectedCallback compilation
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Await async resources preloading and Shadow DOM compilation dynamically
+    let count = 0;
+    while ((!btn.shadowRoot || !btn.shadowRoot.querySelector('slot')) && count < 100) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      count++;
+    }
   });
 
   afterEach(() => {

@@ -76,7 +76,7 @@ async fn main() {
                 extract::run(&src, &types);
 
                 if watch {
-                    let (tx, _rx) = broadcast::channel::<HmrMessage>(100);
+                    let (tx, _rx) = broadcast::channel::<HmrMessage>(16);
                     watcher::start(src, types, tx);
                     tokio::signal::ctrl_c().await.unwrap();
                 }
@@ -111,7 +111,7 @@ async fn run_dev(src: PathBuf, dist: PathBuf, port: u16) {
     extract::run(&src, &types);
 
     // 2. Setup communication channels for HMR events
-    let (tx, _rx) = broadcast::channel::<HmrMessage>(100);
+    let (tx, _rx) = broadcast::channel::<HmrMessage>(16);
 
     // 3. Spawn Axum static + SSE Server
     let server_src = src.clone();

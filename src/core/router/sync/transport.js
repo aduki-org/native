@@ -12,7 +12,14 @@ import { guard } from '../../platform/index.js';
 
 const registry = new Map(); // patternStr -> { factoryFn, pattern }
 const activeConnections = new Map(); // patternStr -> connection instance
-let URLPatternClass = null;
+let URLPatternClass = typeof URLPattern !== 'undefined' ? URLPattern : null;
+
+// Pre-resolve polyfill in background if not native (RT-03)
+if (!URLPatternClass) {
+  guard.urlPattern().then(cls => {
+    URLPatternClass = cls;
+  }).catch(() => {});
+}
 
 async function getURLPattern() {
   if (!URLPatternClass) {
@@ -35,7 +42,7 @@ export function registerConnection(patternStr, factoryFn) {
  * Automatically coordinates in-flight connections against the active URL.
  */
 export async function coordinateConnections(url) {
-  const Pattern = await getURLPattern();
+  const Pattern = URLPatternClass || (await getURLPattern());
   const targetUrl = new URL(url, globalThis.location?.href || 'http://localhost');
 
   const matchedPatterns = new Set();

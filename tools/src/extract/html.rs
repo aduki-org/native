@@ -86,7 +86,7 @@ pub fn emit_descriptor(html_path: &Path, descriptor: &TagsDescriptor) -> Extract
     let mut json_path = html_path.to_path_buf();
     json_path.set_extension("tags.json");
 
-    let json = serde_json::to_string_pretty(descriptor)?;
+    let json = serde_json::to_string(descriptor)?;
     std::fs::write(&json_path, json)?;
     Ok(json_path)
 }

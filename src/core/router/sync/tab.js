@@ -9,6 +9,7 @@
  */
 
 let isSyncing = false;
+let sent = ''; // One-word name: tracks last sent/received synchronization URL (RT-10)
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('native-router-sync') : null;
 
 /**
@@ -21,8 +22,9 @@ export function setupTabSync(router) {
     const { type, url, state } = event.data || {};
     if (type === 'sync-navigate') {
       const currentUrl = window.navigation.currentEntry?.url;
-      if (currentUrl === url) return;
+      if (currentUrl === url || sent === url) return;
 
+      sent = url;
       isSyncing = true;
       const navResult = router.navigate(url, { state });
       
@@ -40,6 +42,8 @@ export function setupTabSync(router) {
     if (isSyncing) return;
     const entry = window.navigation.currentEntry;
     if (entry && entry.url) {
+      if (sent === entry.url) return;
+      sent = entry.url;
       channel.postMessage({
         type: 'sync-navigate',
         url: entry.url,

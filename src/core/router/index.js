@@ -9,7 +9,7 @@
  */
 
 import { register, match, clear, getRoutes } from './match.js';
-import { setup, addGuard, setNotFound, on, nav } from './intercept.js';
+import { setup, addGuard, setNotFound, on, nav, registerNavigator } from './intercept.js';
 import {
   navigate,
   replace,
@@ -74,6 +74,7 @@ export const router = {
 
 // Auto-bootstrap client-side navigation listeners on client load
 if (typeof window !== 'undefined') {
+  registerNavigator(navigate);
   setup();
   setupTabSync(router);
 }

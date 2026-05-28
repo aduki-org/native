@@ -24,9 +24,13 @@ export function element(tag, spec, base) {
     router.register(spec.url, tag, meta);
   }
 
-  // Define properties to watch
+  // Define properties to watch and their Symbol backing store keys (R-01)
   const propKeys = spec.props ? Object.keys(spec.props) : [];
   const observedAttrs = propKeys.map(k => k.toLowerCase());
+  const store = {};
+  for (const key of propKeys) {
+    store[key] = Symbol(key);
+  }
 
   // Resolve absolute URLs relative to import.meta.url (base)
   const styleUrl = spec.style && base && (spec.style.endsWith('.css') || spec.style.startsWith('./') || spec.style.startsWith('/'))
@@ -36,8 +40,35 @@ export function element(tag, spec, base) {
     ? new URL(spec.template, base).href
     : null;
 
-  // Initiate resource fetching exactly once per component registration
-  const resourcesPromise = preloadResources(tag, styleUrl, templateUrl, spec.template, spec.style);
+  // Initiate resource fetching exactly once per component registration (R-06)
+  let resolved = null;
+  const resourcesPromise = preloadResources(tag, styleUrl, templateUrl, spec.template, spec.style).then(res => {
+    resolved = res;
+    return res;
+  });
+
+  // Handle hot reloading of constructable stylesheets (one global listener per unique styleUrl - R-05)
+  if (styleUrl && typeof window !== 'undefined') {
+    if (!window.__native_hmr_listeners__) {
+      window.__native_hmr_listeners__ = new Set();
+    }
+    if (!window.__native_hmr_listeners__.has(styleUrl)) {
+      window.__native_hmr_listeners__.add(styleUrl);
+      const hmrHandler = async (e) => {
+        const { path: changedPath, css } = e.detail;
+        const absoluteChangedUrl = new URL(changedPath, window.location.origin).href;
+        
+        if (styleUrl === absoluteChangedUrl || styleUrl.endsWith(changedPath)) {
+          const res = await resourcesPromise;
+          if (res.stylesheet) {
+            res.stylesheet.replaceSync(css);
+            console.log(`[HMR] Shared AdoptedStyleSheet hot-swapped for <${tag}>`);
+          }
+        }
+      };
+      window.addEventListener('native:hmr:css', hmrHandler);
+    }
+  }
 
   class DeclarativeElement extends BaseElement {
     static observedAttributes = observedAttrs;
@@ -55,12 +86,21 @@ export function element(tag, spec, base) {
         internalsMap.set(this, internals);
       }
 
-      // Initialize default properties values
+      // Initialize default properties backing store dynamically (R-01)
       if (spec.props) {
         for (const [key, config] of Object.entries(spec.props)) {
-          if (config.default !== undefined && this[key] === undefined) {
-            this[key] = config.default;
+          const sym = store[key];
+          const attrName = key.toLowerCase();
+          let initial = config.default;
+          if (config.type === Boolean) {
+            initial = this.hasAttribute(attrName);
+          } else {
+            const attrVal = this.getAttribute(attrName);
+            if (attrVal !== null) {
+              initial = config.type === Number ? Number(attrVal) : attrVal;
+            }
           }
+          this[sym] = initial ?? (config.type === Boolean ? false : null);
         }
       }
     }
@@ -69,8 +109,12 @@ export function element(tag, spec, base) {
       // AbortController bootstrap inside BaseElement
       super.connectedCallback();
       
-      // Wait for resolved resources to compile
-      const { templateNode, stylesheet, tagsDescriptor } = await resourcesPromise;
+      // Wait for resolved resources to compile (synchronously if already cached)
+      let res = resolved;
+      if (!res) {
+        res = await resourcesPromise;
+      }
+      const { templateNode, stylesheet, tagsDescriptor } = res;
 
       if (!this.ctrl || this.ctrl.signal.aborted || !this.isConnected) {
         return;
@@ -99,28 +143,6 @@ export function element(tag, spec, base) {
       this._watch = context.watch;
 
       initializedMap.set(this, true);
-
-      // Handle hot reloading of constructable stylesheets
-      if (styleUrl && stylesheet) {
-        const hmrHandler = (e) => {
-          const { path: changedPath, css } = e.detail;
-          const absoluteChangedUrl = new URL(changedPath, window.location.origin).href;
-          
-          if (styleUrl === absoluteChangedUrl || styleUrl.endsWith(changedPath)) {
-            stylesheet.replaceSync(css);
-            console.log(`[HMR] Dynamic AdoptedStyleSheet hot-swapped for <${tag}>`);
-          }
-        };
-
-        window.addEventListener('native:hmr:css', hmrHandler);
-        
-        // Auto dispose HMR listener when unmounted to avoid memory leak
-        if (this.ctrl) {
-          this.ctrl.signal.addEventListener('abort', () => {
-            window.removeEventListener('native:hmr:css', hmrHandler);
-          });
-        }
-      }
 
       // Mount hook trigger passed with unified AbortController signal
       if (spec.mount) {
@@ -164,31 +186,36 @@ export function element(tag, spec, base) {
     }
   }
 
-  // 1. Generate type-safe getter/setters dynamically on class prototype
+  // 1. Generate type-safe getter/setters dynamically on class prototype (R-01)
   for (const key of propKeys) {
     const config = spec.props[key];
     const attrName = key.toLowerCase();
+    const sym = store[key];
 
     Object.defineProperty(DeclarativeElement.prototype, key, {
       get() {
-        if (config.type === Boolean) {
-          return this.hasAttribute(attrName);
-        }
-        const val = this.getAttribute(attrName);
-        if (val === null) return config.default;
-        return config.type === Number ? Number(val) : val;
+        return this[sym];
       },
       set(val) {
-        const oldVal = this[key];
+        const oldVal = this[sym];
         if (oldVal === val) return;
 
-        // Attribute updates
+        this[sym] = val;
+
+        // Attribute updates (prevent redundant writes / infinite loops)
         if (config.type === Boolean) {
-          val ? this.setAttribute(attrName, '') : this.removeAttribute(attrName);
+          if (val) {
+            if (!this.hasAttribute(attrName)) this.setAttribute(attrName, '');
+          } else {
+            if (this.hasAttribute(attrName)) this.removeAttribute(attrName);
+          }
         } else if (val === null || val === undefined) {
-          this.removeAttribute(attrName);
+          if (this.hasAttribute(attrName)) this.removeAttribute(attrName);
         } else {
-          this.setAttribute(attrName, String(val));
+          const strVal = String(val);
+          if (this.getAttribute(attrName) !== strVal) {
+            this.setAttribute(attrName, strVal);
+          }
         }
 
         // Custom state synchronization (:state(name))
@@ -208,7 +235,13 @@ export function element(tag, spec, base) {
           pendingUpdates.set(key, { val, old: oldVal });
           if (!updateScheduledMap.get(this)) {
             updateScheduledMap.set(this, true);
-            scheduleFrame(() => {
+            
+            // Choose queueMicrotask or scheduleFrame depending on update.visual hint (R-03)
+            const flush = (spec.update.visual === true)
+              ? (fn) => scheduleFrame(fn)
+              : (fn) => queueMicrotask(fn);
+              
+            flush(() => {
               if (!this.ctrl || this.ctrl.signal.aborted || !this.isConnected) {
                 pendingUpdates.clear();
                 updateScheduledMap.set(this, false);
